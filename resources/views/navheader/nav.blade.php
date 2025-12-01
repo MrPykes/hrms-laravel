@@ -177,7 +177,7 @@
         </li>
         <!-- /Message Notifications -->
         <li class="nav-item dropdown has-arrow main-drop">
-            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown"> <span class="user-img"><img src="{{ URL::to('/assets/images/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown"> <span class="user-img"><img src="{{ URL::to('/assets/images/'. (Auth::user()->avatar ?? 'photo_defaults.jpg')) }}" alt="{{ Auth::user()->name }}">
                     <span class="status online"></span></span> <span>{{ Auth::user()->name }}</span> </a>
             <div class="dropdown-menu"> <a class="dropdown-item" href="profile.html">My Profile</a> <a class="dropdown-item" href="settings.html">Settings</a> <a class="dropdown-item" href="{{ route('logout') }}">Logout</a> </div>
         </li>

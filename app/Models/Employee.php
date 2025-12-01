@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\Attendance;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,10 @@ class Employee extends Model
     public function position()
     {
         return $this->belongsTo(Position::class);
+    }
+    public function user()
+    {
+        return $this->hasOne(User::class);
     }
 
     public function attendances()
@@ -79,9 +84,22 @@ class Employee extends Model
         foreach ($dates as $date => $value) {
             if (isset($attendances[$date])) {
                 $dates[$date] = $attendances[$date];
+            }else{
+                //check if holiday
+                $holiday = Holiday::where('date_holiday', $date)->first();
+                if($holiday){
+                    $dates[$date] = 'Holiday';
+                }else{
+                    // check if on leave
+                    $leaveRequest = LeaveRequest::where('employee_id', $this->id)
+                        ->whereDate('from_date', '<=', $date)
+                        ->whereDate('to_date', '>=', $date)
+                        ->where('status', 'approved')
+                        ->first();
+                    $dates[$date] = $leaveRequest ? $leaveRequest->leave_type->name : null;
+                }
             }
         }
-
         return $dates;
     }
 
@@ -171,8 +189,36 @@ class Employee extends Model
 
         // ---------- Helpers to parse times (handles spans across midnight) ----------
         $parse = function(string $time, string $refDate) {
+            if (empty($time) || strlen($time) < 5) {
+                throw new \Exception("Invalid time format: {$time}");
+            }
+            
+            // Ensure time is in proper format
+            $timeParts = explode(':', $time);
+            if (count($timeParts) < 2) {
+                throw new \Exception("Invalid time format: {$time}");
+            }
+            
+            // If time is H:i format, convert to H:i:s
+            if (count($timeParts) == 2) {
+                $time = $time . ':00';
+            }
+            
             // time may be "H:i:s"
-            return Carbon::createFromFormat('Y-m-d H:i:s', $refDate . ' ' . $time);
+            try {
+                return Carbon::createFromFormat('Y-m-d H:i:s', $refDate . ' ' . $time);
+            } catch (\Exception $e) {
+                // Fallback: try with H:i format
+                try {
+                    $shortTime = substr($time, 0, 5);
+                    if (strlen($shortTime) >= 5) {
+                        return Carbon::createFromFormat('Y-m-d H:i', $refDate . ' ' . $shortTime);
+                    }
+                } catch (\Exception $e2) {
+                    // Ignore fallback error
+                }
+                throw new \Exception("Invalid time format: {$time}");
+            }
         };
 
         $addDayIfBefore = function(Carbon $start, Carbon $end) {
@@ -186,35 +232,43 @@ class Employee extends Model
         // ---------- APPLY punch_in if present and not already set ----------
 
         if (!empty($data['punch_in']) && empty($attendance->punch_in)) {
-     
             $attendance->punch_in = $data['punch_in'];
+            
             // compute late_in with grace
             $shiftStartDT = $parse($opts['shift_start'], $attendanceDate);
             $punchInDT = $parse($data['punch_in'], $attendanceDate);
 
-            // late only if punchIn > shiftStart + grace
+            // Calculate late time: if punchIn > shiftStart + grace, then late
+            // diffInSeconds returns positive if punchIn is after shiftStart
             $graceSeconds = $opts['grace_minutes'] * 60;
-            $lateSeconds = max(0, $punchInDT->diffInSeconds($shiftStartDT, false) - $graceSeconds);
-
-
-            $graceSeconds = $opts['grace_minutes'] * 60;
-            $lateSeconds = max(0, $punchInDT->diffInSeconds($shiftStartDT, false) - $graceSeconds);
+            $diffSeconds = $punchInDT->diffInSeconds($shiftStartDT);
+            $lateSeconds = max(0, $diffSeconds - $graceSeconds);
             
             // Convert seconds to decimal hours
             $lateHours = round($lateSeconds / 3600, 2);
             $attendance->late_in = $lateHours;  // decimal value, e.g., 0.00, 0.25, etc.
-
-           
+            $this->setAttendanceStatus($attendance, $opts);
         }
 
         // ---------- APPLY punch_out if present and not already set ----------
         if (!empty($data['punch_out']) && empty($attendance->punch_out)) {
+            // Validate punch_in exists before processing punch_out
+            if (empty($attendance->punch_in)) {
+                throw new \Exception("Cannot punch out: punch in time is missing or invalid.");
+            }
+            
+            // $attendance = Attendance::where('employee_id', $data['employee_id'])->where('attendance_date', $data['attendance_date'])->first();
+
             $attendance->punch_out = $data['punch_out'];
 
             // Build Carbon datetimes for computations.
             // Handle possible overnight: if punch_out <= punch_in then treat as next day.
-            $punchInDT = $parse($attendance->punch_in, $attendanceDate);
-            $punchOutDT = $parse($data['punch_out'], $attendanceDate);
+            try {
+                $punchInDT = $parse($attendance->punch_in, $attendanceDate);
+                $punchOutDT = $parse($data['punch_out'], $attendanceDate);
+            } catch (\Exception $e) {
+                throw new \Exception("Error parsing punch times: " . $e->getMessage());
+            }
             $punchOutDT = $addDayIfBefore($punchInDT, $punchOutDT);
 
             // Shift boundaries may be overnight as well:
@@ -269,11 +323,11 @@ class Employee extends Model
             }
 
             // Late in already set at punch in; if not present set it now (edge-case where in set earlier)
-            // if (empty($attendance->late_in)) {
-            //     $graceSeconds = $opts['grace_minutes'] * 60;
-            //     $lateSeconds = max(0, $punchInDT->diffInSeconds($shiftStartDT, false) - $graceSeconds);
-            //     $attendance->late_in = $lateSeconds > 0 ? gmdate('H:i:s', $lateSeconds) : '00:00:00';   
-            // }
+            if (empty($attendance->late_in)) {
+                $graceSeconds = $opts['grace_minutes'] * 60;
+                $lateSeconds = max(0, $punchInDT->diffInSeconds($shiftStartDT, false) - $graceSeconds);
+                $attendance->late_in = $lateSeconds > 0 ? gmdate('H:i:s', $lateSeconds) : '00:00:00';   
+            }
            
 
             // Overtime: if punch_out > shift_end => overtime = punch_out - shift_end
@@ -287,15 +341,15 @@ class Employee extends Model
             $attendance->production_hours = round($productionSeconds / 3600, 2);
             $attendance->break_hours = round($breakSeconds / 3600, 2);
             $attendance->overtime_hours = $overtimeSeconds > 0 ? round($overtimeSeconds / 3600, 2) : 0.00;
-            $attendance->save();
+            // $attendance->save();
 
         }
 
       // ---------- compute status after all fields computed ----------
-        $this->setAttendanceStatus($attendance, $opts);
+        
         $attendance->save();
 
-        // ---------- create log (only non-null) ----------
+         // --- Sync attendance log with the updated times ---
         $logData = [];
         if (!empty($data['punch_in'])) {
             $logData['punch_in'] = $data['punch_in'];
@@ -303,8 +357,21 @@ class Employee extends Model
         if (!empty($data['punch_out'])) {
             $logData['punch_out'] = $data['punch_out'];
         }
-        if (!empty($logData)) {
-            // $attendance->logs()->create($logData);
+        // if (!empty($logData)) {
+        //     $attendance->logs()->create($logData);
+        // }
+      
+        //  $logPayload = [
+        //     'punch_in'  => $data['punch_in'],
+        //     'punch_out' => $data['punch_out'],
+        // ];
+
+        $existingLog = $attendance->logs()->latest('id')->first();
+
+        if ($existingLog) {
+            $existingLog->update($logData);
+        } elseif ($attendance->punch_in || $attendance->punch_out) {
+            $attendance->logs()->create($logData);
         }
        
         return $attendance;
@@ -333,7 +400,8 @@ class Employee extends Model
             // check if late
             $punchInDT = Carbon::createFromFormat('Y-m-d H:i:s', $attendance->attendance_date . ' ' . $punchIn);
             $shiftStartDT = Carbon::createFromFormat('Y-m-d H:i:s', $attendance->attendance_date . ' ' . $shiftStart);
-            $lateSeconds = max(0, $punchInDT->diffInSeconds($shiftStartDT, false) - ($graceMinutes * 60));
+            $lateSeconds = max(0, $punchInDT->diffInSeconds($shiftStartDT) - ($graceMinutes * 60));
+
             $status = $lateSeconds > 0 ? 'late' : 'on_time';
             // half-day if production <= threshold (can't compute production without punch_out)
         } elseif ($punchIn && $punchOut) {

@@ -14,29 +14,28 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('users')->insert([
+         DB::table('users')->insert([
             [
                 'username' => 'admin',
-                'name' => 'Administrator',
-                'rec_id' => 'creo_0001',
-                'email' => 'admin@creodigitals.com',
+                'email' => "admin@creodigitals.com",
                 'password' => Hash::make('password'),
-                'role' => 'Administrator',
-                'status' => 'active',
+                'role_id' => 1,
+                'status_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
+            ]
+        ]);
+         DB::table('users')->insert([
             [
-                'username' => 'hrmanager',
-                'name' => 'Administrator',
-                'rec_id' => 'creo_0002',
-                'email' => 'hr@creodigitals.com',
+                'employee_id' => 2,
+                'username' => 'edfrancisCalimlim',
+                'email' => "ed@creodigitals.com",
                 'password' => Hash::make('password'),
-                'role' => 'HR',
-                'status' => 'active',
+                'role_id' => 5,
+                'status_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
+            ]
         ]);
     }
 }

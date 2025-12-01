@@ -13,14 +13,14 @@ class CreateEmployeesTable extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('employees')) {
+        // if (!Schema::hasTable('employees')) {
             Schema::create('employees', function (Blueprint $table) {
                 $table->id();
-                $table->text('employee_id')->nullable();
+                $table->string('company_id')->nullable();
                 $table->string('name', 100);
                 $table->string('email', 255);
                 $table->string('phone', 50)->nullable();
-                $table->text('address')->nullable();
+                $table->string('address')->nullable();
                 $table->foreignId('department_id')->constrained('departments')->onDelete('restrict');
                 $table->foreignId('position_id')->constrained('positions')->onDelete('restrict');
                 $table->text('company')->nullable();
@@ -30,7 +30,7 @@ class CreateEmployeesTable extends Migration
                 $table->date('probation_end')->nullable();
                 $table->date('regularization_date')->nullable();
                 $table->date('training_date')->nullable();
-                $table->string('profile_pic', 255)->nullable();
+                $table->string('avatar', 255)->nullable();
                 $table->decimal('salary', 10, 2)->comment('Base monthly salary')->nullable();
                 $table->string('sss_number', 50)->nullable();
                 $table->string('philhealth_number', 50)->nullable();
@@ -38,7 +38,7 @@ class CreateEmployeesTable extends Migration
                 $table->string('tin_number', 50)->nullable();
                 $table->timestamps();
             });
-        }
+        // }
     }
 
     /**

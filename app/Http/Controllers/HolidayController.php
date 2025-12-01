@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\Log;
 use App\Models\Holiday;
+use Carbon\Carbon;
 use DB;
 
 class HolidayController extends Controller
@@ -12,8 +14,10 @@ class HolidayController extends Controller
     // holidays
     public function holiday()
     {
-        $holiday = Holiday::all();
-        return view('form.holidays',compact('holiday'));
+        $holiday = Holiday::orderBy('date_holiday', 'asc')->get();
+        $today_date = Carbon::today(); // Carbon object
+
+        return view('form.holidays', compact('holiday', 'today_date'));
     }
     // save record
     public function saveRecord(Request $request)
@@ -36,6 +40,11 @@ class HolidayController extends Controller
             
         } catch(\Exception $e) {
             DB::rollback();
+            Log::error('Add Holiday failed', [
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             Toastr::error('Add Holiday fail :)','Error');
             return redirect()->back();
         }
@@ -63,6 +72,12 @@ class HolidayController extends Controller
 
         }catch(\Exception $e){
             DB::rollback();
+            Log::error('Holiday update failed', [
+                'holiday_id' => $request->id,
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             Toastr::error('Holiday update fail :)','Error');
             return redirect()->back();
         }

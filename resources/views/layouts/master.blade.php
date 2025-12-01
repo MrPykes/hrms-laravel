@@ -24,9 +24,14 @@
 	<!-- Datetimepicker CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/bootstrap-datetimepicker.min.css') }}">
 	<!-- Chart CSS -->
-	<link rel="stylesheet" href="{{ URL::to('ssets/plugins/morris/morris.css') }}">
+	<link rel="stylesheet" href="{{ URL::to('assets/plugins/morris/morris.css') }}">
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/style.css') }}">
+        <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 
 	{{-- message toastr --}}
 	<link rel="stylesheet" href="{{ URL::to('assets/css/toastr.min.css') }}">
@@ -228,7 +233,7 @@
 				<li class="nav-item dropdown has-arrow main-drop">
 					<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
 						<span class="user-img">
-						<img src="{{ URL::to('/assets/images/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+						<img src="{{ URL::to('/assets/images/'. (Auth::user()->avatar ?? 'photo_defaults.jpg')) }}" alt="{{ Auth::user()->name }}">
 						<span class="status online"></span></span>
 						<span>{{ Auth::user()->name }}</span>
 					</a>
@@ -255,6 +260,7 @@
 		<!-- /Header -->
 		<!-- Sidebar -->
 		{{-- @yield('menu') --}}
+		@yield('sidebar')
 		<!-- /Sidebar -->
 		<!-- Page Wrapper -->
 		@yield('content')
@@ -286,6 +292,7 @@
 	<!-- Custom JS -->
 	<script src="{{ URL::to('assets/js/app.js') }}"></script>
 	
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	@yield('script')
 </body>
 </html>

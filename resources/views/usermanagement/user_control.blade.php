@@ -1,8 +1,11 @@
 @extends('layouts.master')
+@section('sidebar')
+    @include('sidebar.index')
+@endsection
 @section('content')
 
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <!-- <div class="sidebar" id="sidebar">
         <div class="sidebar-inner slimscroll">
             <div id="sidebar-menu" class="sidebar-menu">
                 <ul>
@@ -44,8 +47,8 @@
                         </a>
                         <ul style="display: none;">
                             <li><a href="{{ route('all/employee/card') }}">All Employees</a></li>
-                            <li><a href="{{ route('form/holidays/new') }}">Holidays</a></li>
-                            <li><a href="{{ route('form/leaves/new') }}">Leaves (Admin) 
+                            <li><a href="{{ route('form/holidays') }}">Holidays</a></li>
+                            <li><a href="{{ route('form/leaves') }}">Leaves (Admin) 
                                 <span class="badge badge-pill bg-primary float-right">1</span></a>
                             </li>
                             <li><a href="{{route('form/leavesemployee/new')}}">Leaves (Employee)</a></li>
@@ -142,7 +145,7 @@
                 </ul>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- /Sidebar -->
 
     <!-- Page Wrapper -->
@@ -202,65 +205,62 @@
                         <table class="table table-striped custom-table datatable">
                             <thead>
                                 <tr>
+                                    <th>User Name</th>
                                     <th>Name</th>
-                                    <th>User ID</th>
                                     <th>Email</th>
                                     <th>Position</th>
-                                    <th>Phone</th>
-                                    <th>Join Date</th>
                                     <th>Role</th>
                                     <th>Status</th>
                                     <th>Departement</th>
-                                    <th class="text-right">Action</th>
+                                    <!-- <th class="text-right">Action</th> -->
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($result as $key=>$user )
                                 <tr>
+                                    <td hidden class="ids">{{ $user->id }}</td>
+                                    <td>{{ $user->username }}</td>
+                                    <!-- <td class="id">{{ $user->employee->company_id }}</td> -->
                                     <td>
-                                        <span hidden class="image">{{ $user->avatar}}</span>
+                                        <span hidden class="image">{{ $user->employee->avatar}}</span>
                                         <h2 class="table-avatar">
-                                            <a href="{{ url('employee/profile/'.$user->rec_id) }}" class="avatar"><img src="{{ URL::to('/assets/images/'. $user->avatar) }}" alt="{{ $user->avatar }}"></a>
-                                            <a href="{{ url('employee/profile/'.$user->rec_id) }}" class="name">{{ $user->name }}</span></a>
+                                            <a href="{{ url('employee/profile/'.$user->employee->id) }}" class="avatar"><img src="{{ URL::to('/assets/images/'. ($user->employee->avatar ?? 'photo_defaults.jpg')) }}" alt="{{ $user->employee->avatar }}"></a>
+                                            <a href="{{ url('employee/profile/'.$user->employee->id) }}" class="name">{{ $user->employee->name }}</span></a>
                                         </h2>
                                     </td>
-                                    <td hidden class="ids">{{ $user->id }}</td>
-                                    <td class="id">{{ $user->rec_id }}</td>
                                     <td class="email">{{ $user->email }}</td>
-                                    <td class="position">{{ $user->position }}</td>
-                                    <td class="phone_number">{{ $user->phone_number }}</td>
-                                    <td>{{ $user->join_date }}</td>
+                                    <td class="position">{{ $user->employee->position->name }}</td>
                                     <td>
-                                        @if ($user->role_name=='Admin')
-                                            <span class="badge bg-inverse-danger role_name">{{ $user->role_name }}</span>
-                                            @elseif ($user->role_name=='Super Admin')
-                                            <span class="badge bg-inverse-warning role_name">{{ $user->role_name }}</span>
-                                            @elseif ($user->role_name=='Normal User')
-                                            <span class="badge bg-inverse-info role_name">{{ $user->role_name }}</span>
-                                            @elseif ($user->role_name=='Client')
-                                            <span class="badge bg-inverse-success role_name">{{ $user->role_name }}</span>
-                                            @elseif ($user->role_name=='Employee')
-                                            <span class="badge bg-inverse-dark role_name">{{ $user->role_name }}</span>
+                                        @if ($user->role->name=='Administrator')
+                                            <span class="badge bg-inverse-danger role_name">{{ $user->role->name }}</span>
+                                            @elseif ($user->role->name=='Super Admin')
+                                            <span class="badge bg-inverse-warning role_name">{{ $user->role->name }}</span>
+                                            @elseif ($user->role->name=='Normal User')
+                                            <span class="badge bg-inverse-info role_name">{{ $user->role->name }}</span>
+                                            @elseif ($user->role->name=='Client')
+                                            <span class="badge bg-inverse-success role_name">{{ $user->role->name }}</span>
+                                            @elseif ($user->role->name=='Employee')
+                                            <span class="badge bg-inverse-dark role_name">{{ $user->role->name }}</span>
                                         @endif
                                     </td>
                                     <td>
-                                        <div class="dropdown action-label">
-                                            @if ($user->status=='Active')
+                                        <!-- <div class="dropdown action-label">
+                                            @if ($user->status->type_name =='Active')
                                                 <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa fa-dot-circle-o text-success"></i>
-                                                    <span class="statuss">{{ $user->status }}</span>
+                                                    <span class="statuss">{{ $user->status->type_name  }}</span>
                                                 </a>
-                                                @elseif ($user->status=='Inactive')
+                                                @elseif ($user->status->type_name =='Inactive')
                                                 <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa fa-dot-circle-o text-info"></i>
-                                                    <span class="statuss">{{ $user->status }}</span>
+                                                    <span class="statuss">{{ $user->status->type_name  }}</span>
                                                 </a>
-                                                @elseif ($user->status=='Disable')
+                                                @elseif ($user->status->type_name =='Disable')
                                                 <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa fa-dot-circle-o text-danger"></i>
-                                                    <span class="statuss">{{ $user->status }}</span>
+                                                    <span class="statuss">{{ $user->status->type_name  }}</span>
                                                 </a>
-                                                @elseif ($user->status=='')
+                                                @elseif ($user->status->type_name =='')
                                                 <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa fa-dot-circle-o text-dark"></i>
                                                     <span class="statuss">N/A</span>
@@ -278,10 +278,35 @@
                                                     <i class="fa fa-dot-circle-o text-danger"></i> Disable
                                                 </a>
                                             </div>
+                                        </div> -->
+                                        @php
+                                            // Map status to text and color
+                                        $statusMap = [
+                                            'active'   => 'text-success',
+                                            'inactive' => 'text-info',
+                                            'disable'  => 'text-danger',
+                                        ];
+                                        @endphp
+
+                                        <div class="dropdown action-label">
+                                            <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa fa-dot-circle-o {{ $statusMap[strtolower($user->status->type_name)] }}"></i> {{ $user->status->type_name }}
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                @foreach ($status_user as $status)  
+                                                    <a class="dropdown-item update_status" href="javascript:void(0);"
+                                                        data-toggle="modal" 
+                                                        data-target="#update_user_status"
+                                                        data-id="{{ $user->id }}" 
+                                                        data-status="{{$status->id}}">
+                                                        <i class="fa fa-dot-circle-o {{$statusMap[strtolower($status->type_name)]}}"></i> {{$status->type_name}}
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="department">{{ $user->department }}</td>
-                                    <td class="text-right">
+                                    <td class="department">{{ $user->employee->position->department->name }}</td>
+                                    <!-- <td class="text-right">
                                         <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                             <div class="dropdown-menu dropdown-menu-right">
@@ -289,7 +314,7 @@
                                                 <a class="dropdown-item userDelete" href="#" data-toggle="modal" ata-id="'.$user->id.'" data-target="#delete_user"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                             </div>
                                         </div>
-                                    </td>
+                                    </td> -->
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -312,74 +337,47 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('user/add/save') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('user/add/save') }}" method="POST">
                             @csrf
                             <div class="row"> 
                                 <div class="col-sm-6"> 
                                     <div class="form-group">
-                                        <label>Full Name</label>
-                                        <input class="form-control @error('name') is-invalid @enderror" type="text" id="" name="name" value="{{ old('name') }}" placeholder="Enter Name">
+                                        <!-- <label>Full Name</label>
+                                        <input class="form-control @error('name') is-invalid @enderror" type="text" id="" name="name" value="{{ old('name') }}" placeholder="Enter Name"> -->
+                                        <!-- <label for="mySearchableDropdown">Choose an option:</label>
+                                        <input class="form-control" list="employeeList" id="mySearchableDropdown" name="mySearchableDropdown">
+
+                                        <datalist id="employeeList">
+                                            @foreach ($employees as $employee)
+                                            <option value="{{ $employee->name }}">
+                                            @endforeach
+                                        </datalist> -->
+                                        <label>Select Employee</label>
+                                        <select class="form-control employee-select" name="employee_id" required>
+                                            <option value="">-- Select Employee --</option>
+                                            @foreach ($employees as $employee)
+                                                <option value="{{ $employee->id }}">
+                                                    {{ $employee->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('name')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
-                                <div class="col-sm-6"> 
-                                    <label>Emaill Address</label>
-                                    <input class="form-control" type="email" id="" name="email" placeholder="Enter Email">
-                                </div>
-                            </div>
-                            <div class="row"> 
                                 <div class="col-sm-6"> 
                                     <label>Role Name</label>
-                                    <select class="select" name="role_name" id="role_name">
+                                    <select class="select" name="role" id="role">
                                         <option selected disabled> --Select --</option>
-                                        @foreach ($role_name as $role )
-                                        <option value="{{ $role->role_type }}">{{ $role->role_type }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-sm-6"> 
-                                    <label>Position</label>
-                                    <select class="select" name="position" id="position">
-                                        <option selected disabled> --Select --</option>
-                                        @foreach ($position as $positions )
-                                        <option value="{{ $positions->position }}">{{ $positions->position }}</option>
+                                        @foreach ($roles as $role )
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
-                            <br>
-                            <div class="row"> 
-                                <div class="col-sm-6"> 
-                                    <div class="form-group">
-                                        <label>Phone</label>
-                                        <input class="form-control" type="tel" id="" name="phone" placeholder="Enter Phone">
-                                    </div>
-                                </div>
-                                <div class="col-sm-6"> 
-                                    <label>Department</label>
-                                    <select class="select" name="department" id="department">
-                                        <option selected disabled> --Select --</option>
-                                        @foreach ($department as $departments )
-                                        <option value="{{ $departments->department }}">{{ $departments->department }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row"> 
-                                <div class="col-sm-6"> 
-                                    <label>Status</label>
-                                    <select class="select" name="status" id="status">
-                                        <option selected disabled> --Select --</option>
-                                        @foreach ($status_user as $status )
-                                        <option value="{{ $status->type_name }}">{{ $status->type_name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-sm-6"> 
-                                    <label>Photo</label>
-                                    <input class="form-control" type="file" id="image" name="image">
-                                </div>
-                            </div>
-                            <br>
                             <div class="row"> 
                                 <div class="col-sm-6"> 
                                     <div class="form-group">
@@ -432,39 +430,12 @@
                             <div class="row"> 
                                 <div class="col-sm-6"> 
                                     <label>Role Name</label>
-                                    <select class="select" name="role_name" id="e_role_name">
-                                        @foreach ($role_name as $role )
-                                        <option value="{{ $role->role_type }}">{{ $role->role_type }}</option>
+                                    <select class="select" name="role" id="e_role">
+                                        @foreach ($roles as $role )
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-sm-6"> 
-                                    <label>Position</label>
-                                    <select class="select" name="position" id="e_position">
-                                        @foreach ($position as $positions )
-                                        <option value="{{ $positions->position }}">{{ $positions->position }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <br>
-                            <div class="row"> 
-                                <div class="col-sm-6"> 
-                                    <div class="form-group">
-                                        <label>Phone</label>
-                                        <input class="form-control" type="text" id="e_phone_number" name="phone" placeholder="Enter Phone">
-                                    </div>
-                                </div>
-                                <div class="col-sm-6"> 
-                                    <label>Department</label>
-                                    <select class="select" name="department" id="e_department">
-                                        @foreach ($department as $departments )
-                                        <option value="{{ $departments->department }}">{{ $departments->department }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row"> 
                                 <div class="col-sm-6"> 
                                     <label>Status</label>
                                     <select class="select" name="status" id="e_status">
@@ -472,6 +443,33 @@
                                         <option value="{{ $status->type_name }}">{{ $status->type_name }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row"> 
+                                 <div class="col-sm-6"> 
+                                    <label>Position</label>
+                                    <select disbaled class="select" name="position" id="e_position">
+                                        @foreach ($position as $positions )
+                                        <option value="{{ $positions->position }}">{{ $positions->position }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-sm-6"> 
+                                    <label>Department</label>
+                                    <select disbaled class="select" name="department" id="e_department">
+                                        @foreach ($department as $departments )
+                                        <option value="{{ $departments->name }}">{{ $departments->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row"> 
+                                <div class="col-sm-6"> 
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input class="form-control" type="text" id="e_phone_number" name="phone" placeholder="Enter Phone">
+                                    </div>
                                 </div>
                                 <div class="col-sm-6"> 
                                     <label>Photo</label>
@@ -519,6 +517,35 @@
             </div>
         </div>
         <!-- /Delete User Modal -->
+        <!-- Update Status Modal -->
+        <div class="modal custom-modal fade" id="update_user_status" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="form-header">
+                            <h3>Update Status</h3>
+                            <p>Are you sure want to update Status?</p>
+                        </div>
+                        <div class="modal-btn delete-action">
+                            <form action="{{ route('user/status/update') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="user_id" id="u_id" value="">
+                                <input type="hidden" name="status_id" id="u_sid" value="">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button type="submit" id="btn_update_status" class="btn btn-primary continue-btn submit-btn">Update</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Delete User Modal -->
     </div>
     <!-- /Page Wrapper -->
     @section('script')
@@ -550,6 +577,14 @@
             $( _option).appendTo("#e_status");
             
         });
+
+        $(document).on('click','.update_status',function()
+        {
+            var _this = $(this).parents('tr');
+            $('#u_id').val($(this).data('id'));
+            $('#u_sid').val($(this).data('status'));
+            $('#btn_update_status').text($(this).text());
+        })
     </script>
     {{-- delete js --}}
     <script>
@@ -560,6 +595,16 @@
             $('.e_avatar').val(_this.find('.image').text());
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            $('.employee-select').select2({
+                placeholder: "Search employee...",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script>
+
     @endsection
 
 @endsection

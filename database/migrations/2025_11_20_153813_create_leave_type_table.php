@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePositionTable extends Migration
+class CreateLeaveTypeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreatePositionTable extends Migration
      */
     public function up()
     {
-        Schema::create('positions', function (Blueprint $table) {
+        Schema::create('leave_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
+            $table->string('name')->nullable();
+            $table->string('description')->nullable();
+            $table->integer('number_of_leave')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ class CreatePositionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('position');
+        Schema::dropIfExists('leave_type');
     }
 }

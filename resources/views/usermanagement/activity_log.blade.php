@@ -1,8 +1,11 @@
 @extends('layouts.master')
+@section('sidebar')
+    @include('sidebar.index')
+@endsection
 @section('content')
 
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <!-- <div class="sidebar" id="sidebar">
         <div class="sidebar-inner slimscroll">
             <div id="sidebar-menu" class="sidebar-menu">
                 <ul>
@@ -44,8 +47,8 @@
                         </a>
                         <ul style="display: none;">
                             <li><a href="{{ route('all/employee/card') }}">All Employees</a></li>
-                            <li><a href="{{ route('form/holidays/new') }}">Holidays</a></li>
-                            <li><a href="{{ route('form/leaves/new') }}">Leaves (Admin) 
+                            <li><a href="{{ route('form/holidays') }}">Holidays</a></li>
+                            <li><a href="{{ route('form/leaves') }}">Leaves (Admin) 
                                 <span class="badge badge-pill bg-primary float-right">1</span></a>
                             </li>
                             <li><a href="{{route('form/leavesemployee/new')}}">Leaves (Employee)</a></li>
@@ -146,7 +149,7 @@
                 </ul>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- /Sidebar -->
 
     <!-- Page Wrapper -->

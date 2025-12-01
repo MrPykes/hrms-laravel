@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Models\LeavesAdmin;
+use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use App\Models\Attendance;
 use App\Models\Employee;
 use DB;
@@ -17,21 +20,86 @@ class LeavesController extends Controller
     // leaves
     public function leaves()
     {
-        $leaves = DB::table('leaves_admins')
-                    ->join('users', 'users.rec_id', '=', 'leaves_admins.rec_id')
-                    ->select('leaves_admins.*', 'users.position','users.name','users.avatar')
-                    ->get();
-
-        return view('form.leaves',compact('leaves'));
+        $pendingRequests = (new LeaveRequest)->getLeavePendingRequests();
+        $leaves = LeaveRequest::with(['employee'])->get();
+        $leave_types = LeaveType::all();
+        return view('form.leaves',compact('leaves','pendingRequests','leave_types'));
     }
     // save record
     public function saveRecord(Request $request)
     {
+        // Convert DD-MM-YYYY to Y-m-d
+        $request->merge([
+            'from_date' => Carbon::createFromFormat('d-m-Y', $request->from_date)->toDateString(),
+            'to_date'   => Carbon::createFromFormat('d-m-Y', $request->to_date)->toDateString(),
+        ]);
+
+       
+        // Validate
         $request->validate([
-            'leave_type'   => 'required|string|max:255',
-            'from_date'    => 'required|string|max:255',
-            'to_date'      => 'required|string|max:255',
-            'leave_reason' => 'required|string|max:255',
+            'employee_id'   => 'required|integer|exists:employees,id',
+            'leave_type'    => 'required|integer|exists:leave_types,id',
+            'from_date'     => 'required|date|before_or_equal:to_date',
+            'to_date'       => 'required|date|after_or_equal:from_date',
+            'leave_reason'  => 'required|string|max:255',
+            // 'approve_by'    => 'nullable|integer|exists:employees,id',
+        ]);
+    
+        $from_date = Carbon::parse($request->from_date);
+        $to_date   = Carbon::parse($request->to_date);
+        $days      = $from_date->diffInDays($to_date) + 1;
+
+        // Check leave availability
+        if (!$this->hasAvailableLeave(1, $request->leave_type, $days)) {
+            Toastr::error('Employee does not have enough leave balance.', 'Error');
+            return redirect()->back()->withInput();
+        }
+  
+        DB::beginTransaction();
+        try {
+  
+            $leaves = new LeaveRequest();
+            $leaves->employee_id   = $request->employee_id;
+            $leaves->leave_type_id = $request->leave_type;
+            $leaves->from_date     = $request->from_date;
+            $leaves->to_date       = $request->to_date;
+            $leaves->day           = $days;
+            $leaves->reason  = $request->leave_reason;
+            $leaves->status        = 'pending';
+            // $leaves->approve_by    = $request->approve_by ?? 1;
+            $leaves->save();
+            DB::commit();
+    
+            Toastr::success('Leave created successfully :)', 'Success');
+            return redirect()->back();
+    
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Leave creation failed', [
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            Toastr::error('Add Leaves failed :)', 'Error');
+            return redirect()->back()->withInput();
+        }
+    }
+    
+    // update record
+    public function updateRecordLeave(Request $request)
+    {
+         // Convert DD-MM-YYYY to Y-m-d
+        $request->merge([
+            'from_date' => Carbon::createFromFormat('d-m-Y', $request->from_date)->toDateString(),
+            'to_date'   => Carbon::createFromFormat('d-m-Y', $request->to_date)->toDateString(),       
+        ]);
+        // dd($request->all());
+        // Validate
+        $request->validate([
+            'leave_type'    => 'required|integer|exists:leave_types,id',
+            'from_date'     => 'required|date|before_or_equal:to_date',
+            'to_date'       => 'required|date|after_or_equal:from_date',
+            'leave_reason'  => 'required|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -40,55 +108,33 @@ class LeavesController extends Controller
             $from_date = new DateTime($request->from_date);
             $to_date = new DateTime($request->to_date);
             $day     = $from_date->diff($to_date);
-            $days    = $day->d;
-
-            $leaves = new LeavesAdmin;
-            $leaves->rec_id        = $request->rec_id;
-            $leaves->leave_type    = $request->leave_type;
-            $leaves->from_date     = $request->from_date;
-            $leaves->to_date       = $request->to_date;
-            $leaves->day           = $days;
-            $leaves->leave_reason  = $request->leave_reason;
-            $leaves->save();
-            
-            DB::commit();
-            Toastr::success('Create new Leaves successfully :)','Success');
-            return redirect()->back();
-        } catch(\Exception $e) {
-            DB::rollback();
-            Toastr::error('Add Leaves fail :)','Error');
-            return redirect()->back();
-        }
-    }
-
-    // edit record
-    public function editRecordLeave(Request $request)
-    {
-        DB::beginTransaction();
-        try {
-
-            $from_date = new DateTime($request->from_date);
-            $to_date = new DateTime($request->to_date);
-            $day     = $from_date->diff($to_date);
-            $days    = $day->d;
+            $days    = $day->d + 1; // include start date
 
             $update = [
                 'id'           => $request->id,
-                'leave_type'   => $request->leave_type,
+                'leave_type_id'   => $request->leave_type,
                 'from_date'    => $request->from_date,
                 'to_date'      => $request->to_date,
                 'day'          => $days,
-                'leave_reason' => $request->leave_reason,
+                'reason' => $request->leave_reason,
+                'status' => $request->status,
             ];
-
-            LeavesAdmin::where('id',$request->id)->update($update);
-            DB::commit();
+            dd($update);
+            LeaveRequest::where('id',$request->id)->update($update);
             
-            DB::commit();
             Toastr::success('Updated Leaves successfully :)','Success');
             return redirect()->back();
         } catch(\Exception $e) {
             DB::rollback();
+
+            // Log the error for debugging
+            Log::error('Leave update failed', [
+                'leave_id' => $request->id,
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+
             Toastr::error('Update Leaves fail :)','Error');
             return redirect()->back();
         }
@@ -99,13 +145,21 @@ class LeavesController extends Controller
     {
         try {
 
-            LeavesAdmin::destroy($request->id);
+            LeaveRequest::destroy($request->id);
             Toastr::success('Leaves admin deleted successfully :)','Success');
             return redirect()->back();
         
         } catch(\Exception $e) {
 
             DB::rollback();
+
+             // Log the error for debugging
+            Log::error('Leave deletion failed', [
+                'leave_id' => $request->id,
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+
             Toastr::error('Leaves admin delete fail :)','Error');
             return redirect()->back();
         }
@@ -182,13 +236,14 @@ class LeavesController extends Controller
          $user = auth()->user();
 
         // Check if admin
-        if ($user->role === 'Administrator') {
+        if ($user->role === 'Administrator' || $user->role_id === 1 || $user->role_id === 2) {
             // Admin: can view any employee by id
-            $employeeId = $id ?? 2; // fallback if not passed
+            $employeeId = $id ?? $user->employee_id; // fallback if not passed
         } else {
             // Normal user: can only see their own data
-            $employeeId = $user->id;
+            $employeeId = $user->employee_id;
         }
+
         $name = Employee::where('id', $employeeId)->value('name');
         $attendances = Attendance::with('logs')
                                 // ->where('employee_id', auth()->user()->id)
@@ -207,7 +262,14 @@ class LeavesController extends Controller
     // leaves Employee
     public function leavesEmployee()
     {
-        return view('form.leavesemployee');
+        $leaves = LeaveRequest::with(['employee','leave_type'])
+                                // ->where('employee_id', auth()->user()->id)                       
+                                ->where('employee_id', 1)                       
+                                ->get();
+        $leave_types = LeaveType::all();
+        $leaveBalances = (new LeaveRequest)->getLeaveBalances(1);
+        $pendingRequests = (new LeaveRequest)->getLeavePendingRequests(1);
+        return view('form.leavesemployee', compact('leaves', 'leaveBalances','leave_types', 'pendingRequests'));
     }
 
     // shiftscheduling
@@ -221,4 +283,70 @@ class LeavesController extends Controller
     {
         return view('form.shiftlist');
     }
+    // approve leave
+    public function approveLeave(Request $request)
+    {
+        try {
+            LeaveRequest::where('id', $request->id)->update(['status' => 'approved']);
+            Toastr::success('Leave approved successfully :)','Success');
+            return redirect()->back();
+        
+        } catch(\Exception $e) {
+
+            DB::rollback();
+
+             // Log the error for debugging
+            Log::error('Leave approval failed', [
+                'leave_id' => $request->id,
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+
+            Toastr::error('Leave approval failed :)','Error');
+            return redirect()->back();
+        }
+    }
+
+    // decline leave
+    public function declineLeave(Request $request)
+    {
+        try {
+            LeaveRequest::where('id', $request->id)->update(['status' => 'declined']);
+            Toastr::success('Leave declined successfully :)','Success');
+            return redirect()->back();
+        
+        } catch(\Exception $e) {
+
+            DB::rollback();
+
+             // Log the error for debugging
+            Log::error('Leave decline failed', [
+                'leave_id' => $request->id,
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+
+            Toastr::error('Leave decline failed :)','Error');
+            return redirect()->back();
+        }
+    }
+
+    protected function hasAvailableLeave($employeeId, $leaveTypeId, $requestedDays)
+{
+    // Total allowed leave per type (you may fetch this from leave_types table)
+    $leaveType = LeaveType::find($leaveTypeId);
+    $totalAllowed = $leaveType->number_of_leave ?? 0;
+
+    // Total used leaves for this employee and leave type
+    $usedLeaves = LeaveRequest::where('employee_id', $employeeId)
+        ->where('leave_type_id', $leaveTypeId)
+        ->where('status', 'approved') // only approved leaves count
+        ->sum('day');
+
+    $remaining = $totalAllowed - $usedLeaves;
+
+    return $requestedDays <= $remaining;
+}
+
+
 }

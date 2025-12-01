@@ -1,11 +1,6 @@
-@extends('layouts.master')
-@section('sidebar')
-    @include('sidebar.index')
-@endsection
-@section('content')
-
     <!-- Sidebar -->
-    <!-- <div class="sidebar" id="sidebar">
+@section('sidebar')
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-inner slimscroll">
             <div id="sidebar-menu" class="sidebar-menu">
                 <ul>
@@ -23,15 +18,15 @@
                             <li><a href="{{ route('em/dashboard') }}">Employee Dashboard</a></li>
                         </ul>
                     </li>
-                    @if (Auth::user()->role_name=='Admin')
+                    @if (Auth::user()->role == 'Administrator' || Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
                         <li class="menu-title"> <span>Authentication</span> </li>
                         <li class="submenu">
-                            <a href="#" class="noti-dot">
+                            <a href="#">
                                 <i class="la la-user-secret"></i> <span> User Controller</span> <span class="menu-arrow"></span>
                             </a>
                             <ul style="display: none;">
                                 <li><a href="{{ route('userManagement') }}">All User</a></li>
-                                <li><a class="active" href="{{ route('activity/log') }}">Activity Log</a></li>
+                                <li><a href="{{ route('activity/log') }}">Activity Log</a></li>
                                 <li><a href="{{ route('activity/login/logout') }}">Activity User</a></li>
                             </ul>
                         </li>
@@ -40,13 +35,13 @@
                         <span>Employees</span>
                     </li>
                     <li class="submenu">
-                        <a href="#">
+                        <a href="#" class="noti-dot">
                             <i class="la la-user"></i>
                             <span> Employees</span>
                             <span class="menu-arrow"></span>
                         </a>
                         <ul style="display: none;">
-                            <li><a href="{{ route('all/employee/card') }}">All Employees</a></li>
+                            <li><a class="active" href="{{ route('all/employee/card') }}">All Employees</a></li>
                             <li><a href="{{ route('form/holidays') }}">Holidays</a></li>
                             <li><a href="{{ route('form/leaves') }}">Leaves (Admin) 
                                 <span class="badge badge-pill bg-primary float-right">1</span></a>
@@ -55,8 +50,8 @@
                             <li><a href="{{ route('form/leavesettings/page') }}">Leave Settings</a></li>
                             <li><a href="{{ route('attendance/page') }}">Attendance (Admin)</a></li>
                             <li><a href="{{ route('attendance/employee/page') }}">Attendance (Employee)</a></li>
-                            <li><a href="departments.html">Departments</a></li>
-                            <li><a href="designations.html">Designations</a></li>
+                            <li><a href="{{ route('form/departments') }}">Departments</a></li>
+                            <li><a href="{{ route('designations') }}">Designations</a></li>
                             <li><a href="timesheet.html">Timesheet</a></li>
                             <li><a href="shift-scheduling.html">Shift & Schedule</a></li>
                             <li><a href="overtime.html">Overtime</a></li>
@@ -116,6 +111,7 @@
                             <li><a href="{{ route('form/training/type/list/page') }}"> Training Type </a></li>
                         </ul>
                     </li>
+                    <li class="menu-title"> <span>Administration</span> </li>
                     <li> <a href="assets.html"><i class="la la-object-ungroup">
                         </i> <span>Assets</span></a>
                     </li>
@@ -145,64 +141,6 @@
                 </ul>
             </div>
         </div>
-    </div> -->
-    <!-- /Sidebar -->
-
-    <!-- Page Wrapper -->
-    <div class="page-wrapper">
-        <!-- Page Content -->
-        <div class="content container-fluid">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h3 class="page-title">User Activity Log</h3>
-                        <ul class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item active">User Activity Log</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-			<!-- /Page Header -->
-
-            <!-- /Search Filter -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="table-responsive">
-                        <table class="table table-striped custom-table datatable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Full Name</th>
-                                    <th>Email Address</th>
-                                    <th>Phone Number</th>
-                                    <th>Status</th>
-                                    <th>Role Name</th>
-                                    <th>Modify</th>
-                                    <th>Date Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($activityLog as $key => $item)
-                                    <tr>
-                                        <td>{{ ++$key }}</td>
-                                        <td>{{ $item->user_name }}</td>
-                                        <td>{{ $item->email }}</td>
-                                        <td>{{ $item->phone_number }}</td>
-                                        <td>{{ $item->status }}</td>
-                                        <td>{{ $item->role_name }}</td>
-                                        <td>{{ $item->modify_user }}</td>
-                                        <td>{{ $item->date_time }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /Page Content -->
     </div>
+    <!-- /Sidebar -->
 @endsection
-

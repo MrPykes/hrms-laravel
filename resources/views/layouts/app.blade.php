@@ -21,6 +21,9 @@
         <link rel="stylesheet" href="{{ URL::to('assets/css/select2.min.css') }}">
         <!-- Datetimepicker CSS -->
         <link rel="stylesheet" href="{{ URL::to('assets/css/bootstrap-datetimepicker.min.css') }}">
+        
+        <!-- Fontawesome CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 		<!-- Main CSS -->
         <link rel="stylesheet" href="{{ URL::to('assets/css/style.css') }}">

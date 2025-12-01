@@ -15,16 +15,16 @@ class CreateRoleTypeUsersTable extends Migration
     {
         Schema::create('role_type_users', function (Blueprint $table) {
             $table->id();
-            $table->string('role_type')->nullable();
+            $table->string('name')->nullable();
             $table->timestamps();
         });
 
         DB::table('role_type_users')->insert([
-            ['role_type' => 'Admin'],
-            ['role_type' => 'Super Admin'],
-            ['role_type' => 'Normal User'],
-            ['role_type' => 'Client'],
-            ['role_type' => 'Employee']
+            ['name' => 'Super Admin'],
+            ['name' => 'Administrator'],
+            ['name' => 'Normal User'],
+            ['name' => 'Client'],
+            ['name' => 'Employee']
         ]);
     }
 

@@ -14,19 +14,19 @@ class CreateGenerateIdTblsTable extends Migration
     public function up()
     {
         // Ensure `rec_id` column exists on users before creating the trigger
-        if (!Schema::hasColumn('users', 'rec_id')) {
-            Schema::table('users', function (Blueprint $table) {
+        if (!Schema::hasColumn('employees', 'id')) {
+            Schema::table('employees', function (Blueprint $table) {
                 // Make it nullable here to avoid breaking existing inserts; application code
                 // can enforce non-null later or fill values via the trigger.
-                $table->string('rec_id')->nullable()->after('name');
+                $table->string('company_id')->nullable()->after('name');
             });
         }
 
         DB::unprepared('
-            CREATE TRIGGER id_store BEFORE INSERT ON users FOR EACH ROW
+            CREATE TRIGGER id_store BEFORE INSERT ON employees FOR EACH ROW
             BEGIN
                 INSERT INTO sequence_tbls VALUES (NULL);
-                SET NEW.rec_id = CONCAT("KHM_", LPAD(LAST_INSERT_ID(), 10, "0"));
+                SET NEW.company_id = CONCAT("CREO_", LPAD(LAST_INSERT_ID(), 10, "0"));
             END
         ');
     }

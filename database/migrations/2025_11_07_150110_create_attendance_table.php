@@ -27,12 +27,6 @@ class CreateAttendanceTable extends Migration
             $table->time('punch_out')->nullable();
 
             // Hours computed
-
-            // $table->decimal('late_in', 5, 2)->nullable()->comment('Total late hours');
-            // $table->decimal('production_hours', 5, 2)->nullable()->comment('Total working hours');
-            // $table->decimal('break_hours', 5, 2)->nullable()->comment('Total break hours');
-            // $table->decimal('overtime_hours', 5, 2)->nullable()->comment('Total overtime hours');
-
             $table->decimal('late_in', 5, 2)->nullable()->comment('Total late hours');
             $table->time('early_out')->nullable()->comment('Total early out hours');
             $table->decimal('production_hours', 5, 2)->nullable()->comment('Total working hours');

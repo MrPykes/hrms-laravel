@@ -1,8 +1,11 @@
 @extends('layouts.master')
+@section('sidebar')
+    @include('sidebar.index')
+@endsection
 @section('content')
 
 	<!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <!-- <div class="sidebar" id="sidebar">
         <div class="sidebar-inner slimscroll">
             <div id="sidebar-menu" class="sidebar-menu">
                 <ul>
@@ -138,7 +141,7 @@
                 </ul>
             </div>
         </div>
-    </div>
+    </div> -->
 	<!-- /Sidebar -->
 
     <div class="page-wrapper">

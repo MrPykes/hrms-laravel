@@ -1,8 +1,11 @@
 
 @extends('layouts.master')
+@section('sidebar')
+    @include('sidebar.index')
+@endsection
 @section('content')
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <!-- <div class="sidebar" id="sidebar">
         <div class="sidebar-inner slimscroll">
             <div id="sidebar-menu" class="sidebar-menu">
                 <ul>
@@ -20,7 +23,7 @@
                             <li><a href="{{ route('em/dashboard') }}">Employee Dashboard</a></li>
                         </ul>
                     </li>
-                    @if (Auth::user()->role == 'Administrator')
+                    @if (Auth::user()->role == 'Administrator' || Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
                         <li class="menu-title"> <span>Authentication</span> </li>
                         <li class="submenu">
                             <a href="#">
@@ -44,8 +47,8 @@
                         </a>
                         <ul style="display: none;">
                             <li><a href="{{ route('all/employee/card') }}">All Employees</a></li>
-                            <li><a href="{{ route('form/holidays/new') }}">Holidays</a></li>
-                            <li><a href="{{ route('form/leaves/new') }}">Leaves (Admin) 
+                            <li><a href="{{ route('form/holidays') }}">Holidays</a></li>
+                            <li><a href="{{ route('form/leaves') }}">Leaves (Admin) 
                                 <span class="badge badge-pill bg-primary float-right">1</span></a>
                             </li>
                             <li><a href="{{route('form/leavesemployee/new')}}">Leaves (Employee)</a></li>
@@ -143,7 +146,7 @@
                 </ul>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- /Sidebar -->
     {!! Toastr::message() !!}
     <!-- Page Wrapper -->
@@ -165,12 +168,12 @@
             <!-- /Page Header -->
              <div class="row">  
 
-                 <div class="col-sm-6 col-md-3">  
+                 <div class="col">  
                      <h2>{{ $name }}</h2>
                 </div>     
-                 <div class="col-sm-6 col-md-3">  
+                 <!-- <div class="col-sm-6 col-md-3">  
                     <a href="javascript:void(0);" class="btn btn-success btn-block" data-toggle="modal" data-target="#add_attendance">Add Attendance</a>
-                </div>     
+                </div>      -->
              </div>
             <div class="row">
                 <div class="col-md-4">
@@ -186,34 +189,59 @@
                                 <h6>Punch In at</h6>
                                 <p>{{ $today->punch_in ?? 'N/A' }}</p>
                             </div>
-                            <div class="punch-info" style="--progress: {{ 10 }}%;">
+                            @php
+                                $currentHours = 0;
+                                $progress = 0;
+                                
+                                if ($today && $today->punch_in) {
+                                    if ($today->punch_out) {
+                                        // Use production_hours if punch_out exists
+                                        $currentHours = $today->production_hours ?? 0;
+                                    } else {
+                                        // Calculate hours from punch_in to current time
+                                        $punchInTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $today->attendance_date . ' ' . $today->punch_in);
+                                        $currentTime = \Carbon\Carbon::now();
+                                        $diffInSeconds = $currentTime->diffInSeconds($punchInTime);
+                                        $currentHours = round($diffInSeconds / 3600, 2);
+                                    }
+                                    // Progress based on 8 hours standard work day (100% = 8 hours)
+                                    $progress = min(100, ($currentHours / 8) * 100);
+                                }
+                                
+                                $breakHours = $today->break_hours ?? 0;
+                                $overtimeHours = $today->overtime_hours ?? 0;
+                            @endphp
+                            <div class="punch-info" style="--progress: {{ $progress }}%;">
                                 <div class="punch-hours">
-                                    <span>3.45 hrs</span>
+                                    <span>{{ number_format($currentHours, 2) }} hrs</span>
                                 </div>
                             </div>
                             <div class="punch-btn-section">
                                 <!-- <button type="button" class="btn btn-primary punch-btn">Punch In</button> -->
                                 <form action="{{ route('attendance/punchInOut') }}" method="POST">
                                     @csrf
-                                    <input type="text" name="employeeId" value="{{ $employeeId }}">
+                                    <input type="hidden" name="employeeId" value="{{ $employeeId }}">
                                     <button type="submit" class="btn btn-primary punch-btn">
-                                        Punch In
+                                        @if($today && $today->punch_in && !$today->punch_out)
+                                            Punch Out
+                                        @else
+                                            Punch In
+                                        @endif
                                     </button>
                                 </form>
-
                             </div>
                             <div class="statistics">
                                 <div class="row">
                                     <div class="col-md-6 col-6 text-center">
                                         <div class="stats-box">
                                             <p>Break</p>
-                                            <h6>1.21 hrs</h6>
+                                            <h6>{{ number_format($breakHours, 2) }} hrs</h6>
                                         </div>
                                     </div>
                                     <div class="col-md-6 col-6 text-center">
                                         <div class="stats-box">
                                             <p>Overtime</p>
-                                            <h6>3 hrs</h6>
+                                            <h6>{{ number_format($overtimeHours, 2) }} hrs</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -266,25 +294,35 @@
                             <h5 class="card-title">Today Activity</h5>
                             <ul class="res-activity-list">
                                {{-- Show logs for this attendance --}}
+                                @php
+                                    $hasActivity = false;
+                                @endphp
                                 @if($today && $today->logs->count() > 0)
                                     {{-- Show logs for this attendance --}}
                                     @foreach ($today->logs as $key => $log)
-                                        <li>
-                                            <p class="mb-0">Punch In at</p>
-                                            <p class="res-activity-time">
-                                                <i class="fa fa-clock-o"></i>
-                                                {{ $log->punch_in ?? 'N/A' }}
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <p class="mb-0">Punch Out at</p>
-                                            <p class="res-activity-time">
-                                                <i class="fa fa-clock-o"></i>
-                                                {{ $log->punch_out ?? 'N/A' }}
-                                            </p>
-                                        </li>
+                                        @if($log->punch_in)
+                                            @php $hasActivity = true; @endphp
+                                            <li>
+                                                <p class="mb-0">Punch In at</p>
+                                                <p class="res-activity-time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    {{ $log->punch_in }}
+                                                </p>
+                                            </li>
+                                        @endif
+                                        @if($log->punch_out)
+                                            @php $hasActivity = true; @endphp
+                                            <li>
+                                                <p class="mb-0">Punch Out at</p>
+                                                <p class="res-activity-time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    {{ $log->punch_out }}
+                                                </p>
+                                            </li>
+                                        @endif
                                     @endforeach
-                                @else
+                                @endif
+                                @if(!$hasActivity)
                                     <li>
                                         <p class="text-muted mb-0">No activity recorded today.</p>
                                     </li>
@@ -357,6 +395,7 @@
                                     <th>Production</th>
                                     <th>Break</th>
                                     <th>Overtime</th>
+                                    <th class="text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -369,6 +408,11 @@
                                         <td>{{ $attendance->production_hours ?? 'N/A' }}</td>
                                         <td>{{ $attendance->break_hours ?? 'N/A' }}</td>
                                         <td>{{ $attendance->overtime_hours ?? 'N/A' }}</td>
+                                        <td class="text-right">
+                                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#edit_attendance_{{ $attendance->id }}" title="Edit">
+                                                <i class="fa fa-pencil"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 @endforeach
                                 <!-- <tr>
@@ -500,6 +544,55 @@
             </div>
         </div>
         <!-- /Attendance Modal -->
+
+        <!-- Edit Attendance Modal -->
+        @foreach ($attendances as $attendance)
+        <div class="modal custom-modal fade" id="edit_attendance_{{ $attendance->id }}" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Attendance</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('attendance/update') }}" method="POST" id="edit_attendance_form_{{ $attendance->id }}">
+                            @csrf
+                            <input type="hidden" name="attendance_id" value="{{ $attendance->id }}">
+                            <input type="hidden" name="employee_id" value="{{ $employeeId }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" name="attendance_date" value="{{ $attendance->attendance_date }}" required readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Punch In <span class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" name="punch_in" value="{{ $attendance->punch_in && strlen($attendance->punch_in) >= 5 ? substr($attendance->punch_in, 0, 5) : '' }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Punch Out</label>
+                                        <input type="time" class="form-control" name="punch_out" value="{{ $attendance->punch_out && strlen($attendance->punch_out) >= 5 ? substr($attendance->punch_out, 0, 5) : '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="submit-section">
+                                <button type="submit" class="btn btn-primary submit-btn">Update Attendance</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+        <!-- /Edit Attendance Modal -->
    
     </div>
     <!-- /Page Wrapper -->

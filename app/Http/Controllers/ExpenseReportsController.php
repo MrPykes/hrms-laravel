@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use DB;
 
@@ -34,10 +35,11 @@ class ExpenseReportsController extends Controller
     // leave reports page
     public function leaveReport()
     {
-        $leaves = DB::table('leaves_admins')
-                    ->join('users', 'users.rec_id', '=', 'leaves_admins.rec_id')
-                    ->select('leaves_admins.*', 'users.*')
-                    ->get();
+        // $leaves = DB::table('leaves_admins')
+        //             ->join('users', 'users.rec_id', '=', 'leaves_admins.rec_id')
+        //             ->select('leaves_admins.*', 'users.*')
+        //             ->get();
+        $leaves = LeaveRequest::with('employee.department','leave_type','approver')->get();
         return view('reports.leavereports',compact('leaves'));
     }
 }

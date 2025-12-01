@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Employee;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 class EmployeeSeeder extends Seeder
 {
     /**
@@ -32,7 +34,7 @@ class EmployeeSeeder extends Seeder
 
         foreach ($employees as $index => $emp) {
             Employee::create([
-                'employee_id'    => 'EMP-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
+                'company_id'    => 'CREO-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
                 'name'           => $emp['name'],
                 'email'          => $emp['email'],
                 'department_id'  => 1, // change if needed
@@ -43,5 +45,6 @@ class EmployeeSeeder extends Seeder
                 'salary'         => rand(20000, 40000),
             ]);
         }
+
     }
 }

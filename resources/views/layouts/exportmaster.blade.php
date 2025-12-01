@@ -24,7 +24,7 @@
 	<!-- Datetimepicker CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/bootstrap-datetimepicker.min.css') }}">
 	<!-- Chart CSS -->
-	<link rel="stylesheet" href="{{ URL::to('ssets/plugins/morris/morris.css') }}">
+	<link rel="stylesheet" href="{{ URL::to('assets/plugins/morris/morris.css') }}">
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/style.css') }}">
 

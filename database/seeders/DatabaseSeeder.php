@@ -16,9 +16,12 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartmentSeeder::class,
             PositionSeeder::class,
+            EmployeeSeeder::class,
             UsersTableSeeder::class,
             AttendanceSeeder::class,
-            EmployeeSeeder::class,
+            LeaveTypeSeeder::class,
+            LeaveRequestSeeder::class,
+            HolidaySeeder::class,
         ]);
     }
 }

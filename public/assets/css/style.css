@@ -2288,6 +2288,12 @@ table.dataTable thead > tr > td.sorting {
 	padding-left: 8px;
 	padding-right: 8px;
 }
+#approve_leave .continue-btn,
+#delete_leave .continue-btn,
+#delete_department .continue-btn,
+#delete_designation .continue-btn {
+	width: 100%;
+}
 .continue-btn {
     background-color: #fff;
     border: 1px solid #f43b48;
@@ -4814,7 +4820,7 @@ html.menu-opened body {
     margin-bottom: 5px;
 }
 .recent-activity .res-activity-list {
-    height: 328px;
+    height: 268px;
     list-style-type: none;
     margin-bottom: 0;
     overflow-y: auto;

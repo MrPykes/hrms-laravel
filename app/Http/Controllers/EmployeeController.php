@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\Log;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Position;
@@ -90,74 +91,22 @@ class EmployeeController extends Controller
                 return redirect()->route('all/employee/card');
             } else {
                 DB::rollback();
+                Log::error('Add new employee failed - email already exists', [
+                    'data' => $request->all(),
+                ]);
                 Toastr::error('Add new employee exits :)','Error');
                 return redirect()->back();
             }
          
         }catch(\Exception $e){
             DB::rollback();
+            Log::error('Add new employee failed', [
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             Toastr::error('Add new employee fail :)','Error');
             return redirect()->back();
-        }
-    }
-    public function saveRecord1(Request $request)
-    {
-        $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|string|email',
-            'birthDate'   => 'required|string|max:255',
-            'gender'      => 'required|string|max:255',
-            'role'        => 'required|string|max:255',
-            'department_id' => 'required|exists:departments,id',
-            'position_id'   => 'required|exists:positions,id',
-        ]);
-
-        dd($request->all());
-        DB::beginTransaction();
-        try{
-
-            $employees = Employee::where('email', '=',$request->email)->first();
-            if ($employees === null)
-            {
-
-                $employee = new Employee;
-                $employee->name         = $request->name;
-                $employee->email        = $request->email;
-                $employee->birth_date   = $request->birthDate;
-                $employee->gender       = $request->gender;
-                $employee->role          = $request->role;
-                $employee->department_id = $request->department_id;
-                $employee->position_id   = $request->position_id;
-                $employee->save();
-    
-                // for($i=0;$i<count($request->id_count);$i++)
-                // {
-                //     $module_permissions = [
-                //         'employee_id' => $request->employee_id,
-                //         'module_permission' => $request->permission[$i],
-                //         'id_count'          => $request->id_count[$i],
-                //         'read'              => $request->read[$i],
-                //         'write'             => $request->write[$i],
-                //         'create'            => $request->create[$i],
-                //         'delete'            => $request->delete[$i],
-                //         'import'            => $request->import[$i],
-                //         'export'            => $request->export[$i],
-                //     ];
-                //     DB::table('module_permissions')->insert($module_permissions);
-                // }
-                
-                DB::commit();
-                Toastr::success('Add new employee successfully :)','Success');
-                return redirect()->route('all/employee/card');
-            } else {
-                DB::rollback();
-                Toastr::error('Add new employee exits :)','Error');
-                // return redirect()->back();
-            }
-        }catch(\Exception $e){
-            DB::rollback();
-            Toastr::error('Add new employee fail :)','Error');
-            // return redirect()->back();
         }
     }
     // view edit record
@@ -166,7 +115,7 @@ class EmployeeController extends Controller
         $departments = Department::all();
         $positions = Position::all();
         $employees = Employee::with(['department', 'position'])->where('id', $id)->first();
-        return view('form.edit.editemployee',compact('employees','departments','positions'));
+        return view('form.edit.editemployee',compact('employees','departments','positions'));   
     }
     // update record employee
     public function updateRecord( Request $request)
@@ -187,6 +136,12 @@ class EmployeeController extends Controller
         
         }catch(\Exception $e){
             DB::rollback();
+            Log::error('Update employee record failed', [
+                'employee_id' => $request->id,
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             Toastr::error('updated record fail :)','Error');
             return redirect()->back();
         }
@@ -205,6 +160,11 @@ class EmployeeController extends Controller
 
         }catch(\Exception $e){
             DB::rollback();
+            Log::error('Employee deletion failed', [
+                'employee_id' => $id,
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             Toastr::error('Delete record fail :)','Error');
             return redirect()->back();
         }

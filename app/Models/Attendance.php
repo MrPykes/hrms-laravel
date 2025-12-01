@@ -9,13 +9,15 @@ use App\Models\Employee;
 use Carbon\Carbon;
 class Attendance extends Model
 {
-      use HasFactory;
+    Use HasFactory;
     protected $table = 'attendance'; 
     protected $fillable = [
         'employee_id',
         'attendance_date',
         'punch_in',
         'punch_out',
+        'late_in',
+        'early_out',
         'production_hours',
         'break_hours',
         'overtime_hours',

@@ -1,8 +1,10 @@
 
 @extends('layouts.exportmaster')
+@section('sidebar')
+    @include('sidebar.index')
+@endsection
 @section('content')
     <!-- Page Wrapper -->
-    <div class="">
     <div class="page-wrapper">
         <!-- Page Content -->
         <div class="content container-fluid" id="app">
@@ -33,7 +35,7 @@
                             <div class="row">
                                 <div class="col-sm-6 m-b-20">
                                     @if(!empty($users->avatar))
-                                    <img src="{{ URL::to('/assets/images/'. $users->avatar) }}" class="inv-logo" alt="{{ $users->name }}">
+                                    <img src="{{ URL::to('/assets/images/photo_defaults.jpg') }}" class="inv-logo" alt="{{ $users->name }}">
                                     @endif
                                     <ul class="list-unstyled mb-0">
                                         <li>{{ $users->name }}</li>
@@ -54,8 +56,8 @@
                                 <div class="col-lg-12 m-b-20">
                                     <ul class="list-unstyled">
                                         <li><h5 class="mb-0"><strong>{{ $users->name }}</strong></h5></li>
-                                        <li><span>{{ $users->position }}</span></li>
-                                        <li>Employee ID: {{ $users->rec_id }}</li>
+                                        <li><span>{{ $users->position->name }}</span></li>
+                                        <li>Employee ID: {{ $users->company_id }}</li>
                                         <li>Joining Date: {{ $users->join_date }}</li>
                                     </ul>
                                 </div>

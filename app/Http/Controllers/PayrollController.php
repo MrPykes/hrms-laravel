@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use App\Models\StaffSalary;
+use App\Models\Employee;
 use Brian2694\Toastr\Facades\Toastr;
 
 class PayrollController extends Controller
@@ -13,11 +14,15 @@ class PayrollController extends Controller
     public function salary()
     {
 
-        $users = DB::table('users')
-                    ->join('staff_salaries', 'users.rec_id', '=', 'staff_salaries.rec_id')
-                    ->select('users.*', 'staff_salaries.*')
-                    ->get(); 
-        $userList = DB::table('users')->get();
+        // $users = DB::table('users')
+        //             ->join('staff_salaries', 'users.rec_id', '=', 'staff_salaries.rec_id')
+        //             ->select('users.*', 'staff_salaries.*')
+        //             ->get(); 
+        // $users = DB::table('users')->get();
+        // $userList = DB::table('users')->get();
+
+        $users = Employee::with(['department', 'position'])->get();
+        $userList = Employee::with(['department', 'position'])->get();
         $permission_lists = DB::table('permission_lists')->get();
         return view('payroll.employeesalary',compact('users','userList','permission_lists'));
     }
@@ -73,14 +78,15 @@ class PayrollController extends Controller
      }
 
     // salary view detail
-    public function salaryView($rec_id)
+    public function salaryView($id)
     {
-        $users = DB::table('users')
-                ->join('staff_salaries', 'users.rec_id', '=', 'staff_salaries.rec_id')
-                ->join('profile_information', 'users.rec_id', '=', 'profile_information.rec_id')
-                ->select('users.*', 'staff_salaries.*','profile_information.*')
-                ->where('staff_salaries.rec_id',$rec_id)
-                ->first();
+        // $users = DB::table('users')
+        //         ->join('staff_salaries', 'users.rec_id', '=', 'staff_salaries.rec_id')
+        //         ->join('profile_information', 'users.rec_id', '=', 'profile_information.rec_id')
+        //         ->select('users.*', 'staff_salaries.*','profile_information.*')
+        //         ->where('staff_salaries.rec_id',$rec_id)
+        //         ->first();
+                $users = Employee::with(['department', 'position'])->where('id', $id)->first();
         return view('payroll.salaryview',compact('users'));
     }
 

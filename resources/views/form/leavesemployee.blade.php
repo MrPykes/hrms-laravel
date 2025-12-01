@@ -1,151 +1,12 @@
 
 @extends('layouts.master')
-@section('content')
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-inner slimscroll">
-            <div id="sidebar-menu" class="sidebar-menu">
-                <ul>
-                    <li class="menu-title">
-                        <span>Main</span>
-                    </li>
-                    <li class="submenu">
-                        <a href="#">
-                            <i class="la la-dashboard"></i>
-                            <span> Dashboard</span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <ul style="display: none;">
-                            <li><a href="{{ route('home') }}">Admin Dashboard</a></li>
-                            <li><a href="{{ route('em/dashboard') }}">Employee Dashboard</a></li>
-                        </ul>
-                    </li>
-                    @if (Auth::user()->role_name=='Admin')
-                        <li class="menu-title"> <span>Authentication</span> </li>
-                        <li class="submenu">
-                            <a href="#">
-                                <i class="la la-user-secret"></i> <span> User Controller</span> <span class="menu-arrow"></span>
-                            </a>
-                            <ul style="display: none;">
-                                <li><a href="{{ route('userManagement') }}">All User</a></li>
-                                <li><a href="{{ route('activity/log') }}">Activity Log</a></li>
-                                <li><a href="{{ route('activity/login/logout') }}">Activity User</a></li>
-                            </ul>
-                        </li>
-                    @endif
-                    <li class="menu-title">
-                        <span>Employees</span>
-                    </li>
-                    <li class="submenu">
-                        <a href="#" class="noti-dot">
-                            <i class="la la-user"></i>
-                            <span> Employees</span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <ul style="display: none;">
-                            <li><a href="{{ route('all/employee/card') }}">All Employees</a></li>
-                            <li><a href="{{ route('form/holidays/new') }}">Holidays</a></li>
-                            <li><a href="{{ route('form/leaves/new') }}">Leaves (Admin) 
-                                <span class="badge badge-pill bg-primary float-right">1</span></a>
-                            </li>
-                            <li><a class="active" href="{{route('form/leavesemployee/new')}}">Leaves (Employee)</a></li>
-                            <li><a href="{{ route('form/leavesettings/page') }}">Leave Settings</a></li>
-                            <li><a href="{{ route('attendance/page') }}">Attendance (Admin)</a></li>
-                            <li><a href="{{ route('attendance/employee/page') }}">Attendance (Employee)</a></li>
-                            <li><a href="departments.html">Departments</a></li>
-                            <li><a href="designations.html">Designations</a></li>
-                            <li><a href="timesheet.html">Timesheet</a></li>
-                            <li><a href="shift-scheduling.html">Shift & Schedule</a></li>
-                            <li><a href="overtime.html">Overtime</a></li>
-                        </ul>
-                    </li>
-                    <li class="menu-title"> <span>HR</span> </li>
-                    <li class="submenu">
-                        <a href="#">
-                            <i class="la la-files-o"></i>
-                            <span> Sales </span> 
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <ul style="display: none;">
-                            <li><a href="estimates.html">Estimates</a></li>
-                            <li><a href="{{ route('form/invoice/view/page') }}">Invoices</a></li>
-                            <li><a href="payments.html">Payments</a></li>
-                            <li><a href="expenses.html">Expenses</a></li>
-                            <li><a href="provident-fund.html">Provident Fund</a></li>
-                            <li><a href="taxes.html">Taxes</a></li>
-                        </ul>
-                    </li>
-                    <li class="submenu"> <a href="#"><i class="la la-money"></i>
-                        <span> Payroll </span> <span class="menu-arrow"></span></a>
-                        <ul style="display: none;">
-                            <li><a href="{{ route('form/salary/page') }}"> Employee Salary </a></li>
-                            <li><a href="{{ url('form/salary/view') }}"> Payslip </a></li>
-                            <li><a href="{{ route('form/payroll/items') }}"> Payroll Items </a></li>
-                        </ul>
-                    </li>
-                    <li class="submenu"> <a href="#"><i class="la la-pie-chart"></i>
-                        <span> Reports </span> <span class="menu-arrow"></span></a>
-                        <ul style="display: none;">
-                            <li><a href="{{ route('form/expense/reports/page') }}"> Expense Report </a></li>
-                            <li><a href="{{ route('form/invoice/reports/page') }}"> Invoice Report </a></li>
-                            <li><a href="payments-reports.html"> Payments Report </a></li>
-                            <li><a href="employee-reports.html"> Employee Report </a></li>
-                            <li><a href="payslip-reports.html"> Payslip Report </a></li>
-                            <li><a href="attendance-reports.html"> Attendance Report </a></li>
-                            <li><a href="{{ route('form/leave/reports/page') }}"> Leave Report </a></li>
-                            <li><a href="{{ route('form/daily/reports/page') }}"> Daily Report </a></li>
-                        </ul>
-                    </li>
-                    <li class="menu-title"> <span>Performance</span> </li>
-                    <li class="submenu"> <a href="#"><i class="la la-graduation-cap"></i>
-                        <span> Performance </span> <span class="menu-arrow"></span></a>
-                        <ul style="display: none;">
-                            <li><a href="{{ route('form/performance/indicator/page') }}"> Performance Indicator </a></li>
-                            <li><a href="{{ route('form/performance/page') }}"> Performance Review </a></li>
-                            <li><a href="{{ route('form/performance/appraisal/page') }}"> Performance Appraisal </a></li>
-                        </ul>
-                    </li>
-                    <li class="submenu"> <a href="#"><i class="la la-edit"></i>
-                        <span> Training </span> <span class="menu-arrow"></span></a>
-                        <ul style="display: none;">
-                            <li><a href="{{ route('form/training/list/page') }}"> Training List </a></li>
-                            <li><a href="{{ route('form/trainers/list/page') }}"> Trainers</a></li>
-                            <li><a href="{{ route('form/training/type/list/page') }}"> Training Type </a></li>
-                        </ul>
-                    </li>
-                    <li class="menu-title"> <span>Administration</span> </li>
-                    <li> <a href="assets.html"><i class="la la-object-ungroup">
-                        </i> <span>Assets</span></a>
-                    </li>
-                    <li class="submenu"> <a href="#"><i class="la la-briefcase"></i>
-                        <span> Jobs </span> <span class="menu-arrow"></span></a>
-                        <ul style="display: none;">
-                            <li><a href="user-dashboard.html"> User Dasboard </a></li>
-                            <li><a href="jobs-dashboard.html"> Jobs Dasboard </a></li>
-                            <li><a href="jobs.html"> Manage Jobs </a></li>
-                            <li><a href="manage-resumes.html"> Manage Resumes </a></li>
-                            <li><a href="shortlist-candidates.html"> Shortlist Candidates </a></li>
-                            <li><a href="interview-questions.html"> Interview Questions </a></li>
-                            <li><a href="offer_approvals.html"> Offer Approvals </a></li>
-                            <li><a href="experiance-level.html"> Experience Level </a></li>
-                            <li><a href="candidates.html"> Candidates List </a></li>
-                            <li><a href="schedule-timing.html"> Schedule timing </a></li>
-                            <li><a href="apptitude-result.html"> Aptitude Results </a></li>
-                        </ul>
-                    </li>
-                    <li class="menu-title"> <span>Pages</span> </li>
-                    <li class="submenu"> <a href="#"><i class="la la-user"></i>
-                        <span> Profile </span> <span class="menu-arrow"></span></a>
-                        <ul style="display: none;">
-                            <li><a href="profile.html"> Employee Profile </a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <!-- /Sidebar -->
 
+@section('sidebar')
+    @include('sidebar.index')
+@endsection
+
+@section('content')
+    {!! Toastr::message() !!}
     <!-- Page Wrapper -->
     <div class="page-wrapper">
         <!-- Page Content -->
@@ -161,35 +22,25 @@
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave"><i class="fa fa-plus"></i> Add Leave</a>
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave"><i class="fa fa-plus"></i> Apply Leave</a>
                     </div>
                 </div>
             </div>
             
             <!-- Leave Statistics -->
             <div class="row">
+                @foreach ($leaveBalances as $leaveType => $balance)
                 <div class="col-md-3">
                     <div class="stats-info">
-                        <h6>Annual Leave</h6>
-                        <h4>12</h4>
+                        <h6>{{ $leaveType }}</h6>
+                        <h4>{{ $balance }}</h4>
                     </div>
                 </div>
+                @endforeach
                 <div class="col-md-3">
                     <div class="stats-info">
-                        <h6>Medical Leave</h6>
-                        <h4>3</h4>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-info">
-                        <h6>Other Leave</h6>
-                        <h4>4</h4>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-info">
-                        <h6>Remaining Leave</h6>
-                        <h4>5</h4>
+                        <h6>Pending Request</h6>
+                        <h4>{{ $pendingRequests->count() }}</h4>
                     </div>
                 </div>
             </div>
@@ -207,41 +58,61 @@
                                     <th>No of Days</th>
                                     <th>Reason</th>
                                     <th class="text-center">Status</th>
-                                    <th>Approved by</th>
+                                    <!-- <th>Approved by</th> -->
                                     <th class="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Casual Leave</td>
-                                    <td>8 Mar 2019</td>
-                                    <td>9 Mar 2019</td>
-                                    <td>2 days</td>
-                                    <td>Going to Hospital</td>
-                                    <td class="text-center">
-                                        <div class="action-label">
-                                            <a class="btn btn-white btn-sm btn-rounded" href="javascript:void(0);">
-                                                <i class="fa fa-dot-circle-o text-purple"></i> New
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar avatar-xs"><img src="{{URL::to('assets/img/profiles/avatar-09.jpg')}}" alt=""></a>
-                                            <a href="#">Richard Miles</a>
-                                        </h2>
-                                    </td>
-                                    <td class="text-right">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_leave"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_approve"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
+                                 @if(!empty($leaves))
+                                    @foreach ($leaves as $items )  
+                                        <tr>
+                                            <td hidden class="id">{{ $items->id }}</td>
+                                            <td class="leave_type" data-id="{{ $items->leave_type->id }}">{{ $items->leave_type->name }}</td>
+                                            <td class="from_date">{{ $items->from_date ? \Carbon\Carbon::parse($items->from_date)->format('d-m-Y') : '' }}</td>
+                                            <td class="to_date">{{ $items->to_date ? \Carbon\Carbon::parse($items->to_date)->format('d-m-Y') : '' }}</td>
+                                            <td class="day">{{ $items->day }}</td>
+                                            <td class="reason">{{ $items->reason }}</td>
+                                            <td class="text-center">
+                                                <div class="action-label">
+                                                    <a class="btn btn-white btn-sm btn-rounded" href="javascript:void(0);">
+                                                        @switch($items->status)
+                                                            @case('pending')
+                                                                <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                                                @break
+
+                                                            @case('approved')
+                                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                                                @break
+
+                                                            @case('declined')
+                                                                <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                                                @break
+
+                                                            @default
+                                                                <i class="fa fa-dot-circle-o text-purple"></i> New
+                                                        @endswitch
+                                                    </a>
+                                                </div>
+                                            </td>
+                                            <!-- <td>
+                                                <h2 class="table-avatar">
+                                                    <a href="profile.html" class="avatar avatar-xs"><img src="{{URL::to('assets/img/profiles/avatar-09.jpg')}}" alt=""></a>
+                                                    <a href="#">{{ $items->approver->name ?? 'N/A' }}</a>
+                                                </h2>
+                                            </td> -->
+                                            <td class="text-right">
+                                                <div class="dropdown dropdown-action">
+                                                    <a href="#" class="action-icon dropdown-toggle" {{ $items->status !== 'pending' ? 'disabled' : '' }} data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                                    <div class="dropdown-menu dropdown-menu-right">
+                                                        <a class="dropdown-item edit_leave" href="#" {{ $items->status !== 'pending' ? 'disabled' : '' }} data-toggle="modal" data-id="{{ $items->id }}" data-target="#edit_leave"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                                        <a class="dropdown-item delete_leave" href="#" data-toggle="modal" data-id="{{ $items->id }}" data-target="#delete_leave"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                 @endif
+                                <!-- <tr>
                                     <td>Casual Leave</td>
                                     <td>10 Jan 2019</td>
                                     <td>10 Jan 2019</td>
@@ -269,7 +140,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                </tr>
+                                </tr> -->
                             </tbody>
                         </table>
                     </div>
@@ -290,39 +161,41 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form id="add_leave_form" method="POST" action="{{ route('form/leaves/save') }}">
+                            @csrf
+                            <input class="form-control" name="employee_id" type="hidden" value="{{ Auth::user()->id }}">
                             <div class="form-group">
                                 <label>Leave Type <span class="text-danger">*</span></label>
-                                <select class="select">
-                                    <option>Select Leave Type</option>
-                                    <option>Casual Leave 12 Days</option>
-                                    <option>Medical Leave</option>
-                                    <option>Loss of Pay</option>
+                                <select class="select" name="leave_type">
+                                    <option value="">Select Leave Type</option>
+                                    @foreach ($leave_types as $type)
+                                    <option value="{{ $type->id }}">{{$type->name}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>From <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text">
+                                    <input class="form-control datetimepicker" name="from_date" type="text">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>To <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text">
+                                    <input class="form-control datetimepicker" name="to_date" type="text">
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                                 <label>Number of days <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly type="text">
+                                <input class="form-control" readonly name="number_of_days" type="text">
                             </div>
                             <div class="form-group">
                                 <label>Remaining Leaves <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly value="12" type="text">
-                            </div>
+                                <input class="form-control" readonly name="remaining_leaves" value="12" type="text">
+                            </div> -->
                             <div class="form-group">
                                 <label>Leave Reason <span class="text-danger">*</span></label>
-                                <textarea rows="4" class="form-control"></textarea>
+                                <textarea rows="4" class="form-control" name="leave_reason"></textarea>
                             </div>
                             <div class="submit-section">
                                 <button class="btn btn-primary submit-btn">Submit</button>
@@ -345,37 +218,41 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form id="edit_leave_form"  method="POST" action="{{ route('form/leaves/update') }}">
+                            @csrf
+                            <input type="hidden" class="form-control" id="e_id" name="id" value="" >
                             <div class="form-group">
                                 <label>Leave Type <span class="text-danger">*</span></label>
-                                <select class="select">
-                                    <option>Select Leave Type</option>
-                                    <option>Casual Leave 12 Days</option>
+                                <select id="leave_type" class="select leave_type" name="leave_type">
+                                    <option value="">Select Leave Type</option>
+                                    @foreach ($leave_types as $type)
+                                    <option value="{{ $type->id }}">{{$type->name}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>From <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" value="01-01-2019" type="text">
+                                    <input id="from_date" class="form-control datetimepicker" name="from_date" value="01-01-2019" type="text">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>To <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" value="01-01-2019" type="text">
+                                    <input id="to_date" class="form-control datetimepicker" name="to_date" value="01-01-2019" type="text">
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                                 <label>Number of days <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly type="text" value="2">
+                                <input class="form-control" readonly name="number_of_days" type="text" value="2">
                             </div>
                             <div class="form-group">
                                 <label>Remaining Leaves <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly value="12" type="text">
-                            </div>
+                                <input class="form-control" readonly name="remaining_leaves" value="12" type="text">
+                            </div> -->
                             <div class="form-group">
                                 <label>Leave Reason <span class="text-danger">*</span></label>
-                                <textarea rows="4" class="form-control">Going to hospital</textarea>
+                                <textarea id="leave_reason" rows="4" class="form-control" name="leave_reason">Going to hospital</textarea>
                             </div>
                             <div class="submit-section">
                                 <button class="btn btn-primary submit-btn">Save</button>
@@ -388,7 +265,7 @@
         <!-- /Edit Leave Modal -->
         
         <!-- Delete Leave Modal -->
-        <div class="modal custom-modal fade" id="delete_approve" role="dialog">
+        <div class="modal custom-modal fade" id="delete_leave" role="dialog">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
@@ -399,7 +276,12 @@
                         <div class="modal-btn delete-action">
                             <div class="row">
                                 <div class="col-6">
-                                    <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                                    <!-- <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a> -->
+                                    <form action="{{ route('form/leaves/delete') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="id" id="d_id" value="">
+                                        <button type="submit" class="btn btn-primary continue-btn">Delete</button>
+                                    </form>
                                 </div>
                                 <div class="col-6">
                                     <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
@@ -414,4 +296,36 @@
 
     </div>
     <!-- /Page Wrapper -->
+    @section('script')
+    {{-- update js --}}
+    <script>
+        $(document).on('click','.edit_leave',function()
+        {
+            var _this = $(this).parents('tr');            
+            $('#e_id').val(_this.find('.id').text());
+            $('#edit_name').val(_this.find('.name').text());
+            $('#leave_reason').val(_this.find('.reason').text());  
+            $('#from_date').val(_this.find('.from_date').text());  
+            $('#to_date').val(_this.find('.to_date').text());  
+            // $('#leave_type').val(_this.find('.leave_type').text());  
+            let leaveTypeName = _this.find('.leave_type').text().trim();
+            let leaveTypeId = _this.find('.leave_type').data('id');
+
+            $('#leave_type option').each(function() {
+                if ($(this).text().trim() === leaveTypeName) {
+                    $('#leave_type').val(leaveTypeId);
+                    $('#select2-leave_type-container').text($(this).text().trim());
+                    $('#select2-leave_type-container').attr('title', $(this).text().trim());
+                }
+            });
+
+        });
+        $(document).on('click','.delete_leave',function()
+        {
+            var _this = $(this).parents('tr');            
+            $('#d_id').val(_this.find('.id').text());
+        });
+    </script>
+    @endsection
 @endsection
+

@@ -4,9 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\Log;
+use TaylorNetwork\UsernameGenerator\Generator;
 use DB;
 use App\Models\User;
 use App\Models\Employee;
+use App\Models\Department;
+use App\Models\Position;
+use App\Models\roleTypeUser;
+use App\Models\userType;
 use App\Models\Form;
 use App\Models\ProfileInformation;
 use App\Rules\MatchOldPassword;
@@ -19,19 +25,26 @@ class UserManagementController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role_name=='Admin')
-        {
-            $result      = DB::table('users')->get();
-            $role_name   = DB::table('role_type_users')->get();
-            $position    = DB::table('position_types')->get();
-            $department  = DB::table('departments')->get();
-            $status_user = DB::table('user_types')->get();
-            return view('usermanagement.user_control',compact('result','role_name','position','department','status_user'));
-        }
-        else
-        {
-            return redirect()->route('home');
-        }
+        // dd(Auth::user()->role_name) ;
+        // if (Auth::user()->role_name=='Admin')
+        // {
+            // $result      = DB::table('users')->get();
+            $roles   = roleTypeUser::all();
+            $position    = Position::all();
+            $department  = Department::all();
+            $status_user = userType::all();
+
+            $employees = Employee::all();
+            $result = User::with('employee','role')->whereNotNull("employee_id")->get();
+
+            $users = User::with('employee.position.department','role','status')->whereNotNull("employee_id")->get();
+            // dd($result,$users);
+            return view('usermanagement.user_control',compact('result','roles','position','department','status_user','employees'));
+        // }
+        // else
+        // {
+        //     return redirect()->route('home');
+        // }
         
     }
     // search user
@@ -210,35 +223,23 @@ class UserManagementController extends Controller
     public function addNewUserSave(Request $request)
     {
         $request->validate([
-            'name'      => 'required|string|max:255',
-            'email'     => 'required|string|email|max:255|unique:users',
-            'phone'     => 'required|min:11|numeric',
-            'role_name' => 'required|string|max:255',
-            'position'  => 'required|string|max:255',
-            'department'=> 'required|string|max:255',
-            'status'    => 'required|string|max:255',
-            'image'     => 'required|image',
+            'employee_id' => 'required|exists:employees,id',
+            'role' => 'required|exists:role_type_users,id',
             'password'  => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required',
         ]);
+        $employee = Employee::findOrFail($request->employee_id);
+        $generator = new Generator();
+        $username = $generator->generate($employee->name);
+
         DB::beginTransaction();
         try{
-            $dt       = Carbon::now();
-            $todayDate = $dt->toDayDateTimeString();
-
-            $image = time().'.'.$request->image->extension();  
-            $request->image->move(public_path('assets/images'), $image);
-
             $user = new User;
-            $user->name         = $request->name;
-            $user->email        = $request->email;
-            $user->join_date    = $todayDate;
-            $user->phone_number = $request->phone;
-            $user->role_name    = $request->role_name;
-            $user->position     = $request->position;
-            $user->department   = $request->department;
-            $user->status       = $request->status;
-            $user->avatar       = $image;
+            $user->employee_id         = $request->employee_id;
+            $user->email         = $employee->email;
+            $user->username         = $employee->name;
+            $user->role_id    = $request->role;
+            $user->status_id    = 2;
             $user->password     = Hash::make($request->password);
             $user->save();
             DB::commit();
@@ -246,6 +247,11 @@ class UserManagementController extends Controller
             return redirect()->route('userManagement');
         }catch(\Exception $e){
             DB::rollback();
+              Log::error('User creation failed', [
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             Toastr::error('User add new account fail :)','Error');
             return redirect()->back();
         }
@@ -287,7 +293,6 @@ class UserManagementController extends Controller
             }
             
             $update = [
-
                 'rec_id'       => $rec_id,
                 'name'         => $name,
                 'role_name'    => $role_name,
@@ -318,6 +323,38 @@ class UserManagementController extends Controller
         }catch(\Exception $e){
             DB::rollback();
             Toastr::error('User update fail :)','Error');
+            return redirect()->back();
+        }
+    }
+
+    public function updateUserStatus(Request $request)
+    {
+        DB::beginTransaction();
+        try{
+
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'status_id' => 'required|exists:user_types,id',
+            ]);
+
+            $update = [
+                'status_id' => $request->status_id
+            ];
+
+            User::where('id',$request->user_id)->update($update);
+            DB::commit();
+            Toastr::success('User status updated successfully :)','Success');
+            return redirect()->back();
+
+        }catch(\Exception $e){
+            DB::rollback();
+            Log::error('User status update failed', [
+                'user_id' => $request->user_id,
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            Toastr::error('User status update fail :)','Error');
             return redirect()->back();
         }
     }
