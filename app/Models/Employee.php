@@ -336,7 +336,7 @@ class Employee extends Model
                 $overtimeSeconds = $punchOutDT->diffInSeconds($shiftEndDT, false);
             }
 
-
+            dd($productionSeconds,round($productionSeconds / 3600, 2));
             $attendance->early_out = $earlySeconds > 0 ? gmdate('H:i:s', $earlySeconds) : '00:00:00';
             $attendance->production_hours = round($productionSeconds / 3600, 2);
             $attendance->break_hours = round($breakSeconds / 3600, 2);

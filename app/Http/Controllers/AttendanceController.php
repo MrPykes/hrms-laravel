@@ -146,199 +146,169 @@ class AttendanceController extends Controller
         ]);
 
         try {
-            $attendance = Attendance::findOrFail($request->attendance_id);
-            $employee = Employee::findOrFail($request->employee_id);
 
-            // Prevent punch out without punch in
-            if (empty($request->punch_in) && !empty($request->punch_out)) {
-                Toastr::error('Cannot set punch out without punch in!', 'Error');
-                return back();
-            }
+        $attendance = Attendance::findOrFail($request->attendance_id);
+        $employee   = Employee::findOrFail($request->employee_id);
 
-            $attendanceDate = $request->attendance_date;
-            
-            // Format punch_in: ensure H:i:s format
-            $punchInTime = $request->punch_in;
-            if (strlen($punchInTime) == 5) { // H:i format
-                $punchIn = $punchInTime . ':00';
-            } elseif (strlen($punchInTime) == 8) { // Already H:i:s format
-                $punchIn = $punchInTime;
-            } else {
-                $punchIn = $punchInTime . ':00'; // Default: add seconds
-            }
-            
-            // Format punch_out: ensure H:i:s format or null
-            $punchOut = null;
-            $punchOutTime = $request->input('punch_out'); // Use input() to safely get the value
-            if (!empty($punchOutTime) && trim($punchOutTime) !== '') {
-                if (strlen($punchOutTime) == 5) { // H:i format
-                    $punchOut = $punchOutTime . ':00';
-                } elseif (strlen($punchOutTime) == 8) { // Already H:i:s format
-                    $punchOut = $punchOutTime;
-                } else {
-                    $punchOut = $punchOutTime . ':00'; // Default: add seconds
-                }
-            }
+        // Prevent punch out without punch in
+        if (empty($request->punch_in) && !empty($request->punch_out)) {
+            Toastr::error('Cannot set punch out without punch in!', 'Error');
+            return back();
+        }
 
-            // Default shift settings (same as in Employee model)
-            $shiftStart = '08:00:00';
-            $shiftEnd = '17:00:00';
-            $lunchStart = '12:00:00';
-            $lunchEnd = '13:00:00';
-            $graceMinutes = 10;
+        $attendanceDate = $request->attendance_date;
 
-            // Helper functions
-            $parse = function($time, $refDate) {
-                if (empty($time) || strlen($time) < 5) {
-                    throw new \Exception("Invalid time format: {$time}");
-                }
-                
-                // Ensure time is in proper format
-                $timeParts = explode(':', $time);
-                if (count($timeParts) < 2) {
-                    throw new \Exception("Invalid time format: {$time}");
-                }
-                
-                // If time is H:i format, convert to H:i:s
-                if (count($timeParts) == 2) {
-                    $time = $time . ':00';
-                }
-                
-                try {
-                    return Carbon::createFromFormat('Y-m-d H:i:s', $refDate . ' ' . $time);
-                } catch (\Exception $e) {
-                    // Fallback: try with H:i format
-                    try {
-                        $shortTime = substr($time, 0, 5);
-                        if (strlen($shortTime) < 5) {
-                            throw new \Exception("Invalid time format: {$time}");
-                        }
-                        return Carbon::createFromFormat('Y-m-d H:i', $refDate . ' ' . $shortTime);
-                    } catch (\Exception $e2) {
-                        throw new \Exception("Invalid time format: {$time}");
-                    }
-                }
-            };
+        // -----------------------------
+        // Normalize Punch Times
+        // -----------------------------
+        $normalizeTime = function ($time) {
+            if (!$time) return null;
+            return strlen($time) === 5 ? $time . ':00' : $time;
+        };
 
-            $addDayIfBefore = function(Carbon $start, Carbon $end) {
-                if ($end->lessThanOrEqualTo($start)) {
-                    return $end->copy()->addDay();
-                }
-                return $end;
-            };
+        $punchIn  = $normalizeTime($request->punch_in);
+        $punchOut = $normalizeTime($request->punch_out);
 
-            // Update punch in
-            $attendance->punch_in = $punchIn;
+        // -----------------------------
+        // Default shift config
+        // -----------------------------
+        $shiftStart   = '08:00:00';
+        $shiftEnd     = '17:00:00';
+        $lunchStart   = '12:00:00';
+        $lunchEnd     = '13:00:00';
+        $graceMinutes = 10;
 
-            // Compute late_in with grace
-            $shiftStartDT = $parse($shiftStart, $attendanceDate);
-            $punchInDT = $parse($punchIn, $attendanceDate);
-            $graceSeconds = $graceMinutes * 60;
-            $diffSeconds = $punchInDT->diffInSeconds($shiftStartDT, false);
-            $lateSeconds = max(0, $diffSeconds - $graceSeconds);
-            $attendance->late_in = round($lateSeconds / 3600, 2);
+        // -----------------------------
+        // Helpers
+        // -----------------------------
+        $parse = function ($time, $date) {
+            return Carbon::createFromFormat('Y-m-d H:i:s', "$date $time")->second(0);
+        };
 
-            // Update punch out and compute production/overtime
-            if ($punchOut && !empty(trim($punchOut))) {
-                $attendance->punch_out = $punchOut;
-                try {
-                    $punchOutDT = $parse($punchOut, $attendanceDate);
-                } catch (\Exception $e) {
-                    Toastr::error('Invalid punch out time format: ' . $e->getMessage(), 'Error');
-                    return back();
-                }
-                $punchOutDT = $addDayIfBefore($punchInDT, $punchOutDT);
+        $addDayIfBefore = function (Carbon $base, Carbon $t) {
+            return $t->lessThan($base) ? $t->copy()->addDay() : $t;
+        };
 
-                // Shift boundaries
-                $shiftEndDT = $parse($shiftEnd, $attendanceDate);
-                $shiftEndDT = $addDayIfBefore($shiftStartDT, $shiftEndDT);
+        // -----------------------------
+        // Punch In
+        // -----------------------------
+        $attendance->punch_in = $punchIn;
+        $punchInDT  = $parse($punchIn, $attendanceDate);
+        $shiftStartDT = $parse($shiftStart, $attendanceDate);
 
-                // Lunch window
-                $lunchStartDT = $parse($lunchStart, $attendanceDate);
-                $lunchEndDT = $parse($lunchEnd, $attendanceDate);
-                $lunchEndDT = $addDayIfBefore($lunchStartDT, $lunchEndDT);
+        // -----------------------------
+        // Late In (CORRECT)
+        // -----------------------------
+        $lateRaw = $shiftStartDT->diffInSeconds($punchInDT, false);
+        $lateSeconds = $lateRaw > 0 ? max(0, $lateRaw - ($graceMinutes * 60)) : 0;
+        $attendance->late_in = round($lateSeconds / 3600, 2);
 
-                // Adjust shift end if needed
-                if ($punchInDT->greaterThan($shiftStartDT) && $shiftEndDT->lessThanOrEqualTo($shiftStartDT)) {
-                    $shiftEndDT = $shiftEndDT->copy()->addDay();
-                }
-
-                // Work seconds (total between in & out)
-                $workSeconds = $punchOutDT->diffInSeconds($punchInDT);
-
-                // Break seconds: overlap between [punchIn, punchOut] and [lunchStart, lunchEnd]
-                $breakSeconds = 0;
-                if ($lunchEndDT->lessThanOrEqualTo($lunchStartDT)) {
-                    $lunchEndDT = $lunchEndDT->copy()->addDay();
-                }
-                $overlapStart = max($punchInDT->timestamp, $lunchStartDT->timestamp);
-                $overlapEnd = min($punchOutDT->timestamp, $lunchEndDT->timestamp);
-                if ($overlapEnd > $overlapStart) {
-                    $breakSeconds = $overlapEnd - $overlapStart;
-                }
-
-                // Production hours = work - break
-                $productionSeconds = max(0, $workSeconds - $breakSeconds);
-
-                // Early out
-                $earlySeconds = 0;
-                if ($punchOutDT->lessThan($shiftEndDT)) {
-                    $earlySeconds = $shiftEndDT->diffInSeconds($punchOutDT, false);
-                    if ($earlySeconds < 0) $earlySeconds = abs($earlySeconds);
-                }
-             
-                // Overtime
-                $overtimeSeconds = 0;
-                if ($punchOutDT->greaterThan($shiftEndDT)) {
-                    $overtimeSeconds = $punchOutDT->diffInSeconds($shiftEndDT);
-                }
-
-                $attendance->early_out = $earlySeconds > 0 ? gmdate('H:i:s', $earlySeconds) : '00:00:00';
-                $attendance->production_hours = round($productionSeconds / 3600, 2);
-                $attendance->break_hours = round($breakSeconds / 3600, 2);
-                $attendance->overtime_hours = $overtimeSeconds > 0 ? round($overtimeSeconds / 3600, 2) : 0.00;
-            } else {
-                // If no punch out, reset computed fields
-                $attendance->punch_out = null;
-                $attendance->production_hours = null;
-                $attendance->break_hours = null;
-                $attendance->overtime_hours = null;
-                $attendance->early_out = null;
-            }
-            
-            // Compute status (simplified version)
-            if ($attendance->punch_in && !$attendance->punch_out) {
-                $attendance->status = ($attendance->late_in > 0) ? 'late' : 'on_time';
-            } elseif ($attendance->punch_in && $attendance->punch_out) {
-                $prodHours = $attendance->production_hours ?? 0;
-                if ($prodHours < 4) {
-                    $attendance->status = 'half_day';
-                } elseif ($attendance->late_in > 0) {
-                    $attendance->status = 'late';
-                } elseif ($attendance->overtime_hours > 0) {
-                    $attendance->status = 'overtime';
-                } else {
-                    $attendance->status = 'on_time';
-                }
-            } else {
-                $attendance->status = 'absent';
-            }
-
+        // -----------------------------
+        // Punch Out
+        // -----------------------------
+        if (!$punchOut) {
+            $attendance->punch_out = null;
+            $attendance->production_hours = null;
+            $attendance->break_hours = null;
+            $attendance->overtime_hours = null;
+            $attendance->early_out = null;
             $attendance->save();
+            return;
+        }
 
-            // --- Sync attendance log with the updated times ---
-            $logPayload = [
-                'punch_in'  => $attendance->punch_in,
-                'punch_out' => $attendance->punch_out,
-            ];
+        $attendance->punch_out = $punchOut;
+        $punchOutDT = $parse($punchOut, $attendanceDate);
+        $punchOutDT = $addDayIfBefore($punchInDT, $punchOutDT);
 
-            $existingLog = $attendance->logs()->latest('id')->first();
+        // -----------------------------
+        // Shift & Lunch Windows
+        // -----------------------------
+        $shiftEndDT   = $addDayIfBefore($shiftStartDT, $parse($shiftEnd, $attendanceDate));
+        $lunchStartDT = $parse($lunchStart, $attendanceDate);
+        $lunchEndDT   = $addDayIfBefore($lunchStartDT, $parse($lunchEnd, $attendanceDate));
 
-            if ($existingLog) {
-                $existingLog->update($logPayload);
-            } elseif ($attendance->punch_in || $attendance->punch_out) {
-                $attendance->logs()->create($logPayload);
+        // -----------------------------
+        // Work Seconds
+        // -----------------------------
+        $workSeconds = max(0, abs(
+            $punchInDT->diffInSeconds($punchOutDT, false)
+        ));
+
+        // -----------------------------
+        // Lunch Overlap (FIXED ✅)
+        // -----------------------------
+        $breakSeconds = 0;
+
+        if ($punchOutDT->greaterThan($lunchStartDT) && $punchInDT->lessThan($lunchEndDT)) {
+            $breakStart = $punchInDT->greaterThan($lunchStartDT) ? $punchInDT : $lunchStartDT;
+            $breakEnd   = $punchOutDT->lessThan($lunchEndDT) ? $punchOutDT : $lunchEndDT;
+
+            $breakSeconds = max(0, $breakStart->diffInSeconds($breakEnd));
+        }
+
+        // -----------------------------
+        // Production Hours (ACCURATE ✅)
+        // -----------------------------
+        $productionSeconds = max(0, $workSeconds - $breakSeconds);
+
+        // -----------------------------
+        // Early Out
+        // -----------------------------
+        $earlySeconds = 0;
+        if ($punchOutDT->lessThan($shiftEndDT)) {
+            $earlySeconds = $punchOutDT->diffInSeconds($shiftEndDT);
+        }
+
+        // -----------------------------
+        // Overtime
+        // -----------------------------
+        $overtimeSeconds = 0;
+        if ($punchOutDT->greaterThan($shiftEndDT)) {
+            $overtimeSeconds = $shiftEndDT->diffInSeconds($punchOutDT);
+        }
+
+        // -----------------------------
+        // Save Results
+        // -----------------------------
+        $attendance->early_out = $earlySeconds > 0 ? gmdate('H:i:s', $earlySeconds) : '00:00:00';
+        $attendance->production_hours = round($productionSeconds / 3600, 2);
+        
+        $attendance->break_hours = round($breakSeconds / 3600, 2);
+        $attendance->overtime_hours = round($overtimeSeconds / 3600, 2);
+
+        // -----------------------------
+        // Status
+        // -----------------------------
+        if ($attendance->punch_in && !$attendance->punch_out) {
+            $attendance->status = $attendance->late_in > 0 ? 'late' : 'on_time';
+        } elseif ($attendance->punch_in && $attendance->punch_out) {
+            if ($attendance->production_hours < 4) {
+                $attendance->status = 'half_day';
+            } elseif ($attendance->late_in > 0) {
+                $attendance->status = 'late';
+            } elseif ($attendance->overtime_hours > 0) {
+                $attendance->status = 'overtime';
+            } else {
+                $attendance->status = 'on_time';
             }
+        } else {
+            $attendance->status = 'absent';
+        }
+
+        $attendance->save();
+
+        // -----------------------------
+        // Sync Logs
+        // -----------------------------
+        $logPayload = [
+            'punch_in'  => $attendance->punch_in,
+            'punch_out' => $attendance->punch_out,
+        ];
+
+        $log = $attendance->logs()->latest()->first();
+        $log ? $log->update($logPayload)
+            : $attendance->logs()->create($logPayload);
+
 
             Toastr::success('Attendance updated successfully. Production and overtime hours computed automatically.', 'Success');
         } catch (\Exception $e) {
@@ -354,4 +324,65 @@ class AttendanceController extends Controller
         return back();
     }
 
+
+    public function timesheets(){
+    //     $rows = [
+    //         ['12','2025-11-25','07:20:00','17:02:00'],
+    //         ['7','2025-11-25','07:30:00','17:42:00'],
+    //         ['8','2025-11-25','07:59:00','17:04:00'],
+    //         ['9','2025-11-25','07:58:00','17:02:00'],
+    //         ['11','2025-11-25','07:55:00','17:04:00'],
+    //         ['10','2025-11-25','07:52:00','17:03:00'],
+    //         ['5','2025-11-25','08:17:00','17:02:00'],
+    //         ['6','2025-11-25','08:11:00','17:00:00'], // auto 17:00
+    //         ['4','2025-11-25','07:50:00','17:08:00'],
+
+    //         ['7','2025-11-26','07:30:00','17:03:00'],
+    //         ['12','2025-11-26','07:30:00','17:05:00'],
+    //         ['5','2025-11-26','07:53:00','17:00:00'],
+    //         ['8','2025-11-26','07:54:00','17:08:00'],
+    //         ['10','2025-11-26','07:51:00','17:05:00'],
+    //         ['13','2025-11-26','07:57:00','17:04:00'],
+    //         ['6','2025-11-26','07:59:00','17:06:00'],
+    //         ['9','2025-11-26','08:10:00','17:03:00'],
+    //         ['3','2025-11-26','08:05:00','17:00:00'], // auto 17:00
+    //         ['11','2025-11-26','07:46:00','17:05:00'],
+    //         ['4','2025-11-26','07:55:00','17:03:00'],
+
+    //         ['12','2025-11-27','07:12:00','17:01:00'],
+    //         ['7','2025-11-27','07:47:00','17:02:00'],
+    //         ['8','2025-11-27','07:41:00','17:09:00'],
+    //         ['5','2025-11-27','07:50:00','17:02:00'],
+    //         ['13','2025-11-27','07:56:00','17:03:00'],
+    //         ['4','2025-11-27','07:56:00','17:07:00'],
+    //         ['10','2025-11-27','08:05:00','17:03:00'],
+    //         ['6','2025-11-27','08:08:00','17:04:00'],
+    //         ['11','2025-11-27','07:46:00','17:05:00'],
+
+    //         ['12','2025-11-28','07:32:00','17:00:00'], // auto 17:00
+    //         ['8','2025-11-28','07:38:00','17:15:00'],
+    //         ['10','2025-11-28','07:40:00','17:05:00'],
+    //         ['7','2025-11-28','07:46:00','17:01:00'],
+    //         ['5','2025-11-28','07:50:00','17:01:00'],
+    //         ['13','2025-11-28','07:54:00','17:18:00'],
+    //         ['9','2025-11-28','08:00:00','17:01:00'],
+    //         ['3','2025-11-28','08:04:00','17:00:00'], // auto 17:00
+    //         ['6','2025-11-28','07:58:00','17:10:00'],
+    //         ['4','2025-11-28','08:00:00','17:06:00'],
+    // ];
+    //          foreach ($rows as [$id,$date,$in,$out]) {
+    //         $employee = Employee::where('id',$id)->first();
+    //         // dd($attendance);
+    //             $employee->punchInOutAttendance([
+    //                 'attendance_date' => $date,
+    //                 'punch_in' => $in,
+    //             ]);
+
+    //             $employee->punchInOutAttendance([
+    //                 'attendance_date' => $date,
+    //                 'punch_out' => $out,
+    //                 'employee_id' => $employee->id,
+    //             ]);
+    //     }
+    }
 }

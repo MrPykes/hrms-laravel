@@ -393,21 +393,44 @@
                                     <th>Punch In</th>
                                     <th>Punch Out</th>
                                     <th>Production</th>
-                                    <th>Break</th>
+                                    <th>Late In</th>
                                     <th>Overtime</th>
+                                    <th>Status</th>
                                     <th class="text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($attendances as $attendance)
+                                    @php
+                                        $production_hours = floor($attendance->production_hours);
+                                        $production_minutes = round(($attendance->production_hours - $production_hours) * 60);
+
+                                        $ot_hours = floor($attendance->overtime_hours);
+                                        $ot_minutes = round(($attendance->overtime_hours - $ot_hours) * 60);
+
+                                        $statusColor = [
+                                                        'overtime'  => 'text-info',
+                                                        'on_time' => 'text-success',
+                                                        'late' => 'text-danger',
+                                                    ];
+                                    @endphp
+
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $attendance->attendance_date }}</td>
                                         <td>{{ $attendance->punch_in ?? 'N/A' }}</td>
                                         <td>{{ $attendance->punch_out ?? 'N/A' }}</td>
-                                        <td>{{ $attendance->production_hours ?? 'N/A' }}</td>
+                                        <!-- <td>{{ $attendance->production_hours ?? 'N/A' }}</td> -->
+                                        <td>{{ sprintf('%02d:%02d', $production_hours, $production_minutes) ?? 'N/A' }}</td>
                                         <td>{{ $attendance->break_hours ?? 'N/A' }}</td>
-                                        <td>{{ $attendance->overtime_hours ?? 'N/A' }}</td>
+                                        <!-- <td>{{ $attendance->overtime_hours ?? 'N/A' }}</td> -->
+                                        <td>{{ sprintf('%02d:%02d', $ot_hours, $ot_minutes) ?? 'N/A' }}</td>
+                                        <td>
+                                            <a class="dropdown-item approve" href="javascript:void(0);">
+                                                <i class="fa fa-dot-circle-o {{$statusColor[$attendance->status]}}"></i> {{ucwords(str_replace('_', ' ', $attendance->status))}}
+                                            </a>
+
+                                        </td>
                                         <td class="text-right">
                                             <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#edit_attendance_{{ $attendance->id }}" title="Edit">
                                                 <i class="fa fa-pencil"></i>

@@ -147,6 +147,8 @@ Route::post('form/leaves/delete', [App\Http\Controllers\LeavesController::class,
 Route::post('form/leaves/approve', [App\Http\Controllers\LeavesController::class, 'approveLeave'])->middleware('auth')->name('form/leaves/approve');
 Route::post('form/leaves/decline', [App\Http\Controllers\LeavesController::class, 'declineLeave'])->middleware('auth')->name('form/leaves/decline');
 
+Route::get('timesheets', [App\Http\Controllers\AttendanceController::class, 'timesheets'])->middleware('auth')->name('timesheets');
+
 // ----------------------------- form attendance  ------------------------------//
 Route::get('form/leavesettings/page', [App\Http\Controllers\LeavesController::class, 'leaveSettings'])->middleware('auth')->name('form/leavesettings/page');
 Route::post('attendance/save', [App\Http\Controllers\LeavesController::class, 'saveAttendance'])->middleware('auth')->name('attendance/save');
@@ -215,4 +217,7 @@ Route::get('form/training/type/list/page', [App\Http\Controllers\TrainingTypeCon
 Route::post('form/training/type/save', [App\Http\Controllers\TrainingTypeController::class, 'saveRecord'])->middleware('auth')->name('form/training/type/save');
 Route::post('form//training/type/update', [App\Http\Controllers\TrainingTypeController::class, 'updateRecord'])->middleware('auth')->name('form//training/type/update');
 Route::post('form//training/type/delete', [App\Http\Controllers\TrainingTypeController::class, 'deleteTrainingType'])->middleware('auth')->name('form//training/type/delete');
+
+
+
 
