@@ -52,7 +52,7 @@
                             <li><a href="{{ route('attendance/employee/page') }}">Attendance (Employee)</a></li>
                             <li><a href="{{ route('form/departments') }}">Departments</a></li>
                             <li><a href="{{ route('designations') }}">Designations</a></li>
-                            <li><a href="timesheet.html">Timesheet</a></li>
+                            <li><a href="{{route('timesheets')}}">Timesheet</a></li>
                             <li><a href="shift-scheduling.html">Shift & Schedule</a></li>
                             <li><a href="overtime.html">Overtime</a></li>
                         </ul>

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
+
 use App\Models\LeavesAdmin;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
@@ -17,6 +18,7 @@ use DateTime;
 
 class LeavesController extends Controller
 {
+
     // leaves
     public function leaves()
     {
@@ -93,7 +95,7 @@ class LeavesController extends Controller
             'from_date' => Carbon::createFromFormat('d-m-Y', $request->from_date)->toDateString(),
             'to_date'   => Carbon::createFromFormat('d-m-Y', $request->to_date)->toDateString(),       
         ]);
-        // dd($request->all());
+
         // Validate
         $request->validate([
             'leave_type'    => 'required|integer|exists:leave_types,id',
@@ -101,7 +103,6 @@ class LeavesController extends Controller
             'to_date'       => 'required|date|after_or_equal:from_date',
             'leave_reason'  => 'required|string|max:255',
         ]);
-
         DB::beginTransaction();
         try {
 
@@ -118,8 +119,7 @@ class LeavesController extends Controller
                 'day'          => $days,
                 'reason' => $request->leave_reason,
                 'status' => $request->status,
-            ];
-            dd($update);
+            ];      
             LeaveRequest::where('id',$request->id)->update($update);
             
             Toastr::success('Updated Leaves successfully :)','Success');
@@ -202,61 +202,6 @@ class LeavesController extends Controller
             Toastr::error('Save Attendance fail :)','Error');
             return redirect()->back();
         }
-    }
-    public function attendanceIndex(Request $request)
-    {
-   
-        $month  = $request->month ?? Carbon::now()->month;
-        $year  = $request->year ?? Carbon::now()->year;
-     
-        $daysInMonth = Carbon::create($year, $month)->daysInMonth;
-        $dates = range(1, $daysInMonth);
-
-        $employees = Employee::with(['department', 'position'])
-                ->where(function ($query) use ($request) {
-                    if ($request->filled('name')) {
-                        $query->where('name', 'like', "%{$request->name}%");
-                    }
-                })
-                ->get();
-        $data = $employees->map(function ($employee) use ($month, $year) {
-            return [
-                'employee' => $employee,
-                'attendance' => $employee->attendanceForMonth($month, $year),
-            ];
-        });
-
-    return view('form.attendance', compact('data','dates','request'));
-    }
-
-    // attendance employee
-    public function AttendanceEmployee($id = null)
-    {
-
-         $user = auth()->user();
-
-        // Check if admin
-        if ($user->role === 'Administrator' || $user->role_id === 1 || $user->role_id === 2) {
-            // Admin: can view any employee by id
-            $employeeId = $id ?? $user->employee_id; // fallback if not passed
-        } else {
-            // Normal user: can only see their own data
-            $employeeId = $user->employee_id;
-        }
-
-        $name = Employee::where('id', $employeeId)->value('name');
-        $attendances = Attendance::with('logs')
-                                // ->where('employee_id', auth()->user()->id)
-                                ->where('employee_id', $employeeId)
-                                ->orderBy('attendance_date', 'desc')
-                                // ->where('attendance_date', now())
-                                ->get();
-        $today = Attendance::with('logs')
-                                // ->where('employee_id', auth()->user()->id)
-                                ->where('employee_id', $employeeId)
-                                ->where('attendance_date', now()->format('Y-m-d'))
-                                ->first();                       
-        return view('form.attendanceemployee', compact('attendances', 'today', 'name','employeeId'));
     }
 
     // leaves Employee

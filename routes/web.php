@@ -152,22 +152,23 @@ Route::get('timesheets', [App\Http\Controllers\AttendanceController::class, 'tim
 // ----------------------------- form attendance  ------------------------------//
 Route::get('form/leavesettings/page', [App\Http\Controllers\LeavesController::class, 'leaveSettings'])->middleware('auth')->name('form/leavesettings/page');
 Route::post('attendance/save', [App\Http\Controllers\LeavesController::class, 'saveAttendance'])->middleware('auth')->name('attendance/save');
-Route::get('attendance/page', [App\Http\Controllers\LeavesController::class, 'attendanceIndex'])->middleware('auth')->name('attendance/page');
-Route::post('attendance/page', [App\Http\Controllers\LeavesController::class, 'attendanceIndex'])->middleware('auth')->name('attendance/page');
+
+Route::get('attendance/page', [App\Http\Controllers\AttendanceController::class, 'index'])->middleware('auth')->name('attendance/page');
+Route::post('attendance/page', [App\Http\Controllers\AttendanceController::class, 'index'])->middleware('auth')->name('attendance/page');
 
 Route::post('attendance/punchInOut', [ AttendanceController::class, 'punchInOut'])->middleware('auth')->name('attendance/punchInOut');
 Route::post('attendance/update', [ AttendanceController::class, 'updateAttendance'])->middleware('auth')->name('attendance/update');
 
-// Route::get('attendance/employee/page/', [App\Http\Controllers\LeavesController::class, 'AttendanceEmployee'])->middleware('auth')->name('attendance/employee/page');
-// Route::get('attendance/employee/page/{id}', [App\Http\Controllers\LeavesController::class, 'AttendanceEmployee'])->middleware('auth')->name('attendance/employee/page');
+// Route::get('attendance/employee/page/', [App\Http\Controllers\AttendanceController::class, 'getEmployeeAttendace'])->middleware('auth')->name('attendance/employee/page');
+// Route::get('attendance/employee/page/{id}', [App\Http\Controllers\AttendanceController::class, 'getEmployeeAttendace'])->middleware('auth')->name('attendance/employee/page');
 Route::middleware('auth')->group(function () {
     // Admin can view any employee by ID
-    Route::get('attendance/employee/page/{id}', [LeavesController::class, 'AttendanceEmployee'])
+    Route::get('attendance/employee/page/{id}', [AttendanceController::class, 'getEmployeeAttendance'])
         ->middleware(['auth', 'isAdmin'])
         ->name('attendance/employee/admin');
 
     // Normal user (no ID)
-    Route::get('attendance/employee/page', [LeavesController::class, 'AttendanceEmployee'])
+    Route::get('attendance/employee/page', [AttendanceController::class, 'getEmployeeAttendance'])
         ->name('attendance/employee/page');
 });
 Route::get('form/shiftscheduling/page', [App\Http\Controllers\LeavesController::class, 'shiftScheduLing'])->middleware('auth')->name('form/shiftscheduling/page');
@@ -181,8 +182,14 @@ Route::post('form/salary/delete', [App\Http\Controllers\PayrollController::class
 Route::get('form/salary/view/{rec_id}', [App\Http\Controllers\PayrollController::class, 'salaryView'])->middleware('auth');
 Route::get('form/payroll/items', [App\Http\Controllers\PayrollController::class, 'payrollItems'])->middleware('auth')->name('form/payroll/items');
 
+// ----------------------------- expense  ------------------------------//
+Route::get('expense/edit/{id}', [ExpenseReportsController::class, 'edit'])->middleware('auth')->name('expense/edit');
+Route::post('expense/update', [ExpenseReportsController::class, 'update'])->middleware('auth')->name('expense/update');
+Route::post('expense/store', [ExpenseReportsController::class, 'store'])->middleware('auth')->name('expense/store');
+Route::post('expense/delete', [ExpenseReportsController::class, 'delete'])->middleware('auth')->name('expense/delete');
+
 // ----------------------------- reports  ------------------------------//
-Route::get('form/expense/reports/page', [App\Http\Controllers\ExpenseReportsController::class, 'index'])->middleware('auth')->name('form/expense/reports/page');
+Route::get('form/expense/reports/page', [ExpenseReportsController::class, 'index'])->middleware('auth')->name('form/expense/reports/page');
 Route::get('form/invoice/reports/page', [App\Http\Controllers\ExpenseReportsController::class, 'invoiceReports'])->middleware('auth')->name('form/invoice/reports/page');
 Route::get('form/invoice/view/page', [App\Http\Controllers\ExpenseReportsController::class, 'invoiceView'])->middleware('auth')->name('form/invoice/view/page');
 Route::get('form/daily/reports/page', [App\Http\Controllers\ExpenseReportsController::class, 'dailyReport'])->middleware('auth')->name('form/daily/reports/page');

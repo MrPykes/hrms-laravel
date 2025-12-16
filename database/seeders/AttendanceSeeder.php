@@ -7,9 +7,14 @@ use App\Models\Attendance;
 use App\Models\AttendanceLog;
 use App\Models\Employee;
 use Carbon\Carbon;
-
+use App\Services\AttendanceService;
 class AttendanceSeeder extends Seeder
 {
+    protected AttendanceService $attendanceService;
+    public function __construct(AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
     /**
      * Run the database seeds.
      */
@@ -32,7 +37,7 @@ class AttendanceSeeder extends Seeder
             foreach ($employees as $employee) {
                 $attendance = Attendance::create([
                     'employee_id' => $employee->id,
-                    'attendance_date' => $date->format('Y-m-d'),
+                    'attendance_date' => $date,
                     'punch_in' => '09:00:00',
                     'punch_out' => '18:00:00',
                     'late_in' => 0.0,
@@ -176,16 +181,27 @@ class AttendanceSeeder extends Seeder
         foreach ($rows as [$id,$date,$in,$out]) {
             $employee = Employee::where('id',$id)->first();
             // dd($attendance);
-                $employee->punchInOutAttendance([
+                // $employee->punchInOutAttendance([
+                //     'attendance_date' => $date,
+                //     'punch_in' => $in,
+                // ]);
+                $this->attendanceService->handlePunchIn([
                     'attendance_date' => $date,
                     'punch_in' => $in,
+                    'id' => $employee->id,
                 ]);
 
-                $employee->punchInOutAttendance([
+                $this->attendanceService->handlePunchOut([
                     'attendance_date' => $date,
                     'punch_out' => $out,
-                    'employee_id' => $employee->id,
+                    'id' => $employee->id,
                 ]);
+
+                // $employee->punchInOutAttendance([
+                //     'attendance_date' => $date,
+                //     'punch_out' => $out,
+                //     'employee_id' => $employee->id,
+                // ]);
         }
     }
 }

@@ -144,6 +144,7 @@
                                             <td>{{\Carbon\Carbon::parse($items->to_date)->format('F d Y')}}</td>
                                             <td class="day">{{ $items->day }} Day</td>
                                             <td class="leave_reason">{{$items->reason}}</td>
+                                            <td hidden class="status">{{$items->status}}</td>
                                             <td class="text-center">
                                                 @php
                                                     // Map status to text and color
@@ -261,6 +262,7 @@
                         <form action="{{ route('form/leaves/update') }}" method="POST">
                             @csrf
                             <input type="hidden" id="e_id" name="id" value="">
+                            <input type="hidden" id="e_status" name="status" value="">
                             <div class="form-group">
                                 <label>Leave Type <span class="text-danger">*</span></label>
                                <select class="select" name="leave_type">
@@ -379,6 +381,7 @@
             $('#e_from_date').val(_this.find('.from_date').text());  
             $('#e_to_date').val(_this.find('.to_date').text());  
             $('#e_leave_reason').val(_this.find('.leave_reason').text());
+            $('#e_status').val(_this.find('.status').text());
 
             var leave_type = (_this.find(".leave_type").text());
             var _option = '<option selected value="' + leave_type + '">' + _this.find('.leave_type').text() + '</option>'

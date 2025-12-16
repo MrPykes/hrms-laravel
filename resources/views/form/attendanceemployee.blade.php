@@ -169,7 +169,7 @@
              <div class="row">  
 
                  <div class="col">  
-                     <h2>{{ $name }}</h2>
+                     <h2>{{ $employee->name }}</h2>
                 </div>     
                  <!-- <div class="col-sm-6 col-md-3">  
                     <a href="javascript:void(0);" class="btn btn-success btn-block" data-toggle="modal" data-target="#add_attendance">Add Attendance</a>
@@ -220,7 +220,7 @@
                                 <!-- <button type="button" class="btn btn-primary punch-btn">Punch In</button> -->
                                 <form action="{{ route('attendance/punchInOut') }}" method="POST">
                                     @csrf
-                                    <input type="hidden" name="employeeId" value="{{ $employeeId }}">
+                                    <input type="hidden" name="employeeId" value="{{ $employee->employee_id }}">
                                     <button type="submit" class="btn btn-primary punch-btn">
                                         @if($today && $today->punch_in && !$today->punch_out)
                                             Punch Out
@@ -400,13 +400,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($attendances as $attendance)
+                                @foreach ($attendance as $row)
                                     @php
-                                        $production_hours = floor($attendance->production_hours);
-                                        $production_minutes = round(($attendance->production_hours - $production_hours) * 60);
+                                        $production_hours = floor($row->production_hours);
+                                        $production_minutes = round(($row->production_hours - $production_hours) * 60);
 
-                                        $ot_hours = floor($attendance->overtime_hours);
-                                        $ot_minutes = round(($attendance->overtime_hours - $ot_hours) * 60);
+                                        $ot_hours = floor($row->overtime_hours);
+                                        $ot_minutes = round(($row->overtime_hours - $ot_hours) * 60);
 
                                         $statusColor = [
                                                         'overtime'  => 'text-info',
@@ -417,22 +417,22 @@
 
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $attendance->attendance_date }}</td>
-                                        <td>{{ $attendance->punch_in ?? 'N/A' }}</td>
-                                        <td>{{ $attendance->punch_out ?? 'N/A' }}</td>
-                                        <!-- <td>{{ $attendance->production_hours ?? 'N/A' }}</td> -->
+                                        <td>{{ $row->attendance_date }}</td>
+                                        <td>{{ $row->punch_in ?? 'N/A' }}</td>
+                                        <td>{{ $row->punch_out ?? 'N/A' }}</td>
+                                        <!-- <td>{{ $row->production_hours ?? 'N/A' }}</td> -->
                                         <td>{{ sprintf('%02d:%02d', $production_hours, $production_minutes) ?? 'N/A' }}</td>
-                                        <td>{{ $attendance->break_hours ?? 'N/A' }}</td>
-                                        <!-- <td>{{ $attendance->overtime_hours ?? 'N/A' }}</td> -->
+                                        <td>{{ $row->break_hours ?? 'N/A' }}</td>
+                                        <!-- <td>{{ $row->overtime_hours ?? 'N/A' }}</td> -->
                                         <td>{{ sprintf('%02d:%02d', $ot_hours, $ot_minutes) ?? 'N/A' }}</td>
                                         <td>
                                             <a class="dropdown-item approve" href="javascript:void(0);">
-                                                <i class="fa fa-dot-circle-o {{$statusColor[$attendance->status]}}"></i> {{ucwords(str_replace('_', ' ', $attendance->status))}}
+                                                <i class="fa fa-dot-circle-o {{$statusColor[$row->status]}}"></i> {{ucwords(str_replace('_', ' ', $row->status))}}
                                             </a>
 
                                         </td>
                                         <td class="text-right">
-                                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#edit_attendance_{{ $attendance->id }}" title="Edit">
+                                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#edit_attendance_{{ $row->id }}" title="Edit">
                                                 <i class="fa fa-pencil"></i>
                                             </button>
                                         </td>
@@ -569,8 +569,8 @@
         <!-- /Attendance Modal -->
 
         <!-- Edit Attendance Modal -->
-        @foreach ($attendances as $attendance)
-        <div class="modal custom-modal fade" id="edit_attendance_{{ $attendance->id }}" role="dialog">
+        @foreach ($attendance as $row)
+        <div class="modal custom-modal fade" id="edit_attendance_{{ $row->id }}" role="dialog">
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -580,15 +580,15 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('attendance/update') }}" method="POST" id="edit_attendance_form_{{ $attendance->id }}">
+                        <form action="{{ route('attendance/update') }}" method="POST" id="edit_attendance_form_{{ $row->id }}">
                             @csrf
-                            <input type="hidden" name="attendance_id" value="{{ $attendance->id }}">
-                            <input type="hidden" name="employee_id" value="{{ $employeeId }}">
+                            <input type="hidden" name="attendance_id" value="{{ $row->id }}">
+                            <input type="hidden" name="employee_id" value="{{ $employee->employeeId }}">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Date <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" name="attendance_date" value="{{ $attendance->attendance_date }}" required readonly>
+                                        <input type="date" class="form-control" name="attendance_date" value="{{ $row->attendance_date }}" required readonly>
                                     </div>
                                 </div>
                             </div>
@@ -596,13 +596,13 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Punch In <span class="text-danger">*</span></label>
-                                        <input type="time" class="form-control" name="punch_in" value="{{ $attendance->punch_in && strlen($attendance->punch_in) >= 5 ? substr($attendance->punch_in, 0, 5) : '' }}" required>
+                                        <input type="time" class="form-control" name="punch_in" value="{{ $row->punch_in && strlen($row->punch_in) >= 5 ? substr($row->punch_in, 0, 5) : '' }}" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Punch Out</label>
-                                        <input type="time" class="form-control" name="punch_out" value="{{ $attendance->punch_out && strlen($attendance->punch_out) >= 5 ? substr($attendance->punch_out, 0, 5) : '' }}">
+                                        <input type="time" class="form-control" name="punch_out" value="{{ $row->punch_out && strlen($row->punch_out) >= 5 ? substr($row->punch_out, 0, 5) : '' }}">
                                     </div>
                                 </div>
                             </div>

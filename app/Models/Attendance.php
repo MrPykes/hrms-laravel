@@ -23,6 +23,10 @@ class Attendance extends Model
         'overtime_hours',
         'status'
     ];
+    protected $casts = [
+        'attendance_date' => 'date',
+    ];
+
 
     public function logs()
     {
@@ -33,4 +37,17 @@ class Attendance extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
+
+    public function getPayableOvertimeHoursAttribute()
+    {
+        return ($this->overtime_hours * 60) > 50
+            ? $this->overtime_hours
+            : 0;
+    }
+
+    public function getFormattedAttendanceDateAttribute()
+    {
+        return Carbon::parse($this->attendance_date)->format('d-m-Y');
+    }
+
 }

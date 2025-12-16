@@ -2288,6 +2288,7 @@ table.dataTable thead > tr > td.sorting {
 	padding-left: 8px;
 	padding-right: 8px;
 }
+#delete_expense .continue-btn,
 #approve_leave .continue-btn,
 #delete_leave .continue-btn,
 #delete_department .continue-btn,
@@ -8553,3 +8554,14 @@ ul.comment-list li ul.children {
     color: var(--bs-body-color);
 }
 
+/* timesheets */
+
+.timesheet-container { background: white; border-radius: 10px; padding: 20px; }
+.timesheet-container .header-bar { background: #9251d6; color: white; padding: 20px; border-radius: 10px 10px 0 0; }
+.timesheet-container .section-title { background: #e9d9f5; padding: 8px; font-weight: 600; }
+.timesheet-container table thead th { background: #5d2f92; color: white; text-align: center; }
+.timesheet-container table tbody td { text-align: center; vertical-align: middle; }
+.timesheet-container .highlight-green { background: #e3f7e9; }
+.timesheet-container .highlight-yellow { background: #fff4cc; }
+.timesheet-container .highlight-red { background: #ffe5e5; }
+.timesheet-container .footer-total { background: #e3f7e9; font-weight: bold; }

@@ -188,38 +188,30 @@ class Employee extends Model
         }
 
         // ---------- Helpers to parse times (handles spans across midnight) ----------
-        $parse = function(string $time, string $refDate) {
+      $parse = function(string $time, $refDate) {
+            if ($refDate instanceof \Carbon\Carbon) {
+                $refDate = $refDate->format('Y-m-d'); // keep only date
+            } else {
+                // If string, strip time portion if present
+                $refDate = substr($refDate, 0, 10); // "YYYY-MM-DD"
+            }
+
             if (empty($time) || strlen($time) < 5) {
                 throw new \Exception("Invalid time format: {$time}");
             }
-            
-            // Ensure time is in proper format
+
             $timeParts = explode(':', $time);
             if (count($timeParts) < 2) {
                 throw new \Exception("Invalid time format: {$time}");
             }
-            
-            // If time is H:i format, convert to H:i:s
+
             if (count($timeParts) == 2) {
-                $time = $time . ':00';
+                $time .= ':00';
             }
-            
-            // time may be "H:i:s"
-            try {
-                return Carbon::createFromFormat('Y-m-d H:i:s', $refDate . ' ' . $time);
-            } catch (\Exception $e) {
-                // Fallback: try with H:i format
-                try {
-                    $shortTime = substr($time, 0, 5);
-                    if (strlen($shortTime) >= 5) {
-                        return Carbon::createFromFormat('Y-m-d H:i', $refDate . ' ' . $shortTime);
-                    }
-                } catch (\Exception $e2) {
-                    // Ignore fallback error
-                }
-                throw new \Exception("Invalid time format: {$time}");
-            }
+
+            return Carbon::createFromFormat('Y-m-d H:i:s', $refDate . ' ' . $time);
         };
+
 
         $addDayIfBefore = function(Carbon $start, Carbon $end) {
             // If end <= start, assume end is next day -> add 1 day

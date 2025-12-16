@@ -36,6 +36,7 @@ class CreateEmployeesTable extends Migration
                 $table->string('philhealth_number', 50)->nullable();
                 $table->string('pagibig_number', 50)->nullable();
                 $table->string('tin_number', 50)->nullable();
+                $table->integer('is_active')->default(1)->comment('1=Active, 0=Inactive');
                 $table->timestamps();
             });
         // }

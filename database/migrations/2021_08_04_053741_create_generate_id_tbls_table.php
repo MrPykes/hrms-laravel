@@ -23,7 +23,7 @@ class CreateGenerateIdTblsTable extends Migration
         }
 
         DB::unprepared('
-            CREATE TRIGGER id_store BEFORE INSERT ON employees FOR EACH ROW
+            CREATE TRIGGER id BEFORE INSERT ON employees FOR EACH ROW
             BEGIN
                 INSERT INTO sequence_tbls VALUES (NULL);
                 SET NEW.company_id = CONCAT("CREO_", LPAD(LAST_INSERT_ID(), 10, "0"));

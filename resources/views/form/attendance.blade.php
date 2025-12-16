@@ -35,33 +35,27 @@
                     </div>
                     <div class="col-sm-6 col-md-3"> 
                         <div class="form-group form-focus select-focus">
-                            <select id="month" name="month" class="select floating"> 
+                           <select id="month" name="month" class="select floating">
                                 <option value="">-</option>
-                                <option value=1>Jan</option>
-                                <option value=2>Feb</option>
-                                <option value=3>Mar</option>
-                                <option value=4>Apr</option>
-                                <option value=5>May</option>
-                                <option value=6>Jun</option>
-                                <option value=7>Jul</option>
-                                <option value=8>Aug</option>
-                                <option value=9>Sep</option>
-                                <option value=10>Oct</option>
-                                <option value=11>Nov</option>
-                                <option value=12>Dec</option>
+                                @foreach([
+                                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+                                    5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
+                                    9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+                                ] as $num => $name)
+                                    <option value="{{ $num }}" {{ ($request->month == $num) ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
                             </select>
+
                             <label class="focus-label">Select Month</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3"> 
                         <div class="form-group form-focus select-focus">
-                            <select id="year" name="year" class="select floating"> 
+                            <select id="year" name="year" class="select floating" value="{{ $request->year }}"> 
                                 <option value="">-</option>
-                                <option value=2019>2019</option>
-                                <option value=2018>2018</option>
-                                <option value=2017>2017</option>
-                                <option value=2016>2016</option>
-                                <option value=2015>2015</option>
+                                @foreach($years as $year)
+                                    <option value="{{ $year }}" {{ ($request->year == $year) ? 'selected' : '' }}>{{ $year }}</option>
+                                @endforeach
                             </select>
                             <label class="focus-label">Select Year</label>
                         </div>

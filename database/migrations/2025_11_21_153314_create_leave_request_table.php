@@ -22,7 +22,9 @@ class CreateLeaveRequestTable extends Migration
             $table->integer('day')->nullable();
             $table->string('reason')->nullable();
             $table->string('status')->nullable();
-            $table->foreignId('approve_by')->nullable()->constrained('employees')->onDelete('cascade');
+            $table->foreignId('approve_by')->nullable();
+            $table->foreign('approve_by')->references('id')->on('employees')->onDelete('cascade');
+            $table->integer('is_paid')->nullable();
             $table->timestamps();
         });
     }

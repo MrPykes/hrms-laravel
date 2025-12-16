@@ -14,10 +14,9 @@ class HolidayController extends Controller
     // holidays
     public function holiday()
     {
-        $holiday = Holiday::orderBy('date_holiday', 'asc')->get();
+        $holidays = Holiday::orderBy('date_holiday', 'asc')->get();
         $today_date = Carbon::today(); // Carbon object
-
-        return view('form.holidays', compact('holiday', 'today_date'));
+        return view('form.holidays', compact('holidays', 'today_date'));
     }
     // save record
     public function saveRecord(Request $request)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Log;
+use App\Services\AttendanceService;
 use Carbon\Carbon;
 use DateTime;
 use App\Models\Employee;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 class AttendanceController extends Controller
 {
+    protected AttendanceService $attendanceService;
+
+    public function __construct(AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
     public function punchInOut1(Request $request)
     {
         $request->validate([
@@ -324,65 +331,41 @@ class AttendanceController extends Controller
         return back();
     }
 
+    public function index(Request $request)
+    {
+        $month = $request->month ?: now()->month;
+        $year  = $request->year ?: now()->year;
 
-    public function timesheets(){
-    //     $rows = [
-    //         ['12','2025-11-25','07:20:00','17:02:00'],
-    //         ['7','2025-11-25','07:30:00','17:42:00'],
-    //         ['8','2025-11-25','07:59:00','17:04:00'],
-    //         ['9','2025-11-25','07:58:00','17:02:00'],
-    //         ['11','2025-11-25','07:55:00','17:04:00'],
-    //         ['10','2025-11-25','07:52:00','17:03:00'],
-    //         ['5','2025-11-25','08:17:00','17:02:00'],
-    //         ['6','2025-11-25','08:11:00','17:00:00'], // auto 17:00
-    //         ['4','2025-11-25','07:50:00','17:08:00'],
+        $dates = range(1, Carbon::create($year, $month)->daysInMonth);
 
-    //         ['7','2025-11-26','07:30:00','17:03:00'],
-    //         ['12','2025-11-26','07:30:00','17:05:00'],
-    //         ['5','2025-11-26','07:53:00','17:00:00'],
-    //         ['8','2025-11-26','07:54:00','17:08:00'],
-    //         ['10','2025-11-26','07:51:00','17:05:00'],
-    //         ['13','2025-11-26','07:57:00','17:04:00'],
-    //         ['6','2025-11-26','07:59:00','17:06:00'],
-    //         ['9','2025-11-26','08:10:00','17:03:00'],
-    //         ['3','2025-11-26','08:05:00','17:00:00'], // auto 17:00
-    //         ['11','2025-11-26','07:46:00','17:05:00'],
-    //         ['4','2025-11-26','07:55:00','17:03:00'],
+        $data = $this->attendanceService->getStatusEmployeeAttendance($request);
 
-    //         ['12','2025-11-27','07:12:00','17:01:00'],
-    //         ['7','2025-11-27','07:47:00','17:02:00'],
-    //         ['8','2025-11-27','07:41:00','17:09:00'],
-    //         ['5','2025-11-27','07:50:00','17:02:00'],
-    //         ['13','2025-11-27','07:56:00','17:03:00'],
-    //         ['4','2025-11-27','07:56:00','17:07:00'],
-    //         ['10','2025-11-27','08:05:00','17:03:00'],
-    //         ['6','2025-11-27','08:08:00','17:04:00'],
-    //         ['11','2025-11-27','07:46:00','17:05:00'],
+        $years = $this->attendanceService->getYears();
 
-    //         ['12','2025-11-28','07:32:00','17:00:00'], // auto 17:00
-    //         ['8','2025-11-28','07:38:00','17:15:00'],
-    //         ['10','2025-11-28','07:40:00','17:05:00'],
-    //         ['7','2025-11-28','07:46:00','17:01:00'],
-    //         ['5','2025-11-28','07:50:00','17:01:00'],
-    //         ['13','2025-11-28','07:54:00','17:18:00'],
-    //         ['9','2025-11-28','08:00:00','17:01:00'],
-    //         ['3','2025-11-28','08:04:00','17:00:00'], // auto 17:00
-    //         ['6','2025-11-28','07:58:00','17:10:00'],
-    //         ['4','2025-11-28','08:00:00','17:06:00'],
-    // ];
-    //          foreach ($rows as [$id,$date,$in,$out]) {
-    //         $employee = Employee::where('id',$id)->first();
-    //         // dd($attendance);
-    //             $employee->punchInOutAttendance([
-    //                 'attendance_date' => $date,
-    //                 'punch_in' => $in,
-    //             ]);
+        return view('form.attendance', compact('data', 'dates', 'request','years'));
+    }
 
-    //             $employee->punchInOutAttendance([
-    //                 'attendance_date' => $date,
-    //                 'punch_out' => $out,
-    //                 'employee_id' => $employee->id,
-    //             ]);
-    //     }
+    // attendance employee
+    public function getEmployeeAttendance($id = null)
+    {
+        $user = Auth::user();
+        // Determine allowed employee ID
+        if (in_array($user->role_id, [1, 2])) {
+            $id = $id ?? $user->employee_id;
+        } else {
+            $id = $user->employee_id;
+        }
+        $employee = Employee::where('id', $id)->first();
+        $attendance = $this->attendanceService->getAttendance($id);
+        $today = $this->attendanceService->getAttendanceToday($id);
+        return view('form.attendanceemployee', compact('attendance','today','employee'));
+    }
+    public function timesheets($id = null){
+        $user = Auth::user();
+        $id = 4;
+        $employee = Employee::where('id', $id)->with('position','department')->first();
+        $data = $this->attendanceService->getBiWeeklyAttendance($employee, 11, 2025, '16-31');
+        return view('form.timesheets', compact('data','employee'));
+
     }
 }
