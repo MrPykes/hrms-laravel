@@ -15,6 +15,7 @@ use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\LeavesController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\IncomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -194,6 +195,15 @@ Route::get('form/invoice/reports/page', [App\Http\Controllers\ExpenseReportsCont
 Route::get('form/invoice/view/page', [App\Http\Controllers\ExpenseReportsController::class, 'invoiceView'])->middleware('auth')->name('form/invoice/view/page');
 Route::get('form/daily/reports/page', [App\Http\Controllers\ExpenseReportsController::class, 'dailyReport'])->middleware('auth')->name('form/daily/reports/page');
 Route::get('form/leave/reports/page', [App\Http\Controllers\ExpenseReportsController::class, 'leaveReport'])->middleware('auth')->name('form/leave/reports/page');
+
+
+// ----------------------------- income  ------------------------------//
+Route::get('income', [IncomeController::class, 'index'])->middleware('auth')->name('income');
+Route::get('income/edit/{id}', [IncomeController::class, 'edit'])->middleware('auth')->name('income/edit');
+Route::post('income/update', [IncomeController::class, 'update'])->middleware('auth')->name('income/update');
+Route::post('income/store', [IncomeController::class, 'store'])->middleware('auth')->name('income/store');
+Route::post('income/destroy', [IncomeController::class, 'destroy'])->middleware('auth')->name('income/destroy');
+
 
 // ----------------------------- performance  ------------------------------//
 Route::get('form/performance/indicator/page', [App\Http\Controllers\PerformanceController::class, 'index'])->middleware('auth')->name('form/performance/indicator/page');

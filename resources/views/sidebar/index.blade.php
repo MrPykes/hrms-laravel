@@ -42,7 +42,7 @@
                         </a>
                         <ul style="display: none;">
                             <li><a class="active" href="{{ route('all/employee/card') }}">All Employees</a></li>
-                            <li><a href="{{ route('form/holidays') }}">Holidays</a></li>
+                            <li><a class="" href="{{ route('form/holidays') }}">Holidays</a></li>
                             <li><a href="{{ route('form/leaves') }}">Leaves (Admin) 
                                 <span class="badge badge-pill bg-primary float-right">1</span></a>
                             </li>
@@ -67,6 +67,7 @@
                         <ul style="display: none;">
                             <li><a href="estimates.html">Estimates</a></li>
                             <li><a href="{{ route('form/invoice/view/page') }}">Invoices</a></li>
+                            <li><a href="{{ route('income') }}">Income</a></li>
                             <li><a href="payments.html">Payments</a></li>
                             <li><a href="expenses.html">Expenses</a></li>
                             <li><a href="provident-fund.html">Provident Fund</a></li>

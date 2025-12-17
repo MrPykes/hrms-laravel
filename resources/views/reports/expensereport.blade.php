@@ -327,7 +327,6 @@
     <script>
        $(document).on('click', '.edit-expense', function () {
             let expenseId = $(this).data('id');
-            console.log('expenseId',expenseId);
             
             $.ajax({
                 url: `/expense/edit/${expenseId}`,

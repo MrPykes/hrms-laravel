@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Expense;
+use App\Models\Income;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -105,6 +106,7 @@ class ExpenseReportsController extends Controller
         return redirect()->back()->with('success', 'Expense deleted successfully.');
     }
     // view page
+
     public function invoiceReports()
     {
         return view('reports.invoicereports');

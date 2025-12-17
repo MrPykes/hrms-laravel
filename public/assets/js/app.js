@@ -20,10 +20,13 @@ $(document).ready(function() {
 	
 	function init() {
 		var $this = Sidemenu;
+		console.log("sub menu");
+		
 		$('#sidebar-menu a').on('click', function(e) {
 			if($(this).parent().hasClass('submenu')) {
 				e.preventDefault();
 			}
+			
 			if(!$(this).hasClass('subdrop')) {
 				$('ul', $(this).parents('ul:first')).slideUp(350);
 				$('a', $(this).parents('ul:first')).removeClass('subdrop');
