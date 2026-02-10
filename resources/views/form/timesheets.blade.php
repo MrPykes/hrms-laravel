@@ -8,7 +8,12 @@
     @php
         use Carbon\Carbon;
         $today_date = Carbon::today()->format('d-m-Y');
-        $year = Carbon::today()->format('Y');
+        $currentYear = Carbon::today()->format('Y');
+        $months = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+        ];
     @endphp
     <!-- Page Wrapper -->
     <div class="page-wrapper">
@@ -18,20 +23,66 @@
             <div class="header-bar mb-3">
                 <div class="row">
                     <div class="col-md-8">
-                        <h3>Biweekly timesheet (sample)</h3>
+                        <h3>Biweekly Timesheet</h3>
                     </div>
                     <div class="col-md-4 text-end">
-                        <strong>Week beginning:</strong> 07-01-2024
+                        <strong>Period:</strong> {{ $months[(int)$month] }} {{ $period == '1-15' ? '1-15' : '16-' . Carbon::create($year, $month)->daysInMonth }}, {{ $year }}
                     </div>
                 </div>
             </div>
 
+            <!-- Filter Section -->
+            <div class="row mb-4 filter-row">
+                <form method="GET" action="{{ route('timesheets') }}" class="row w-100">
+                    @if($isAdmin)
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus select-focus">
+                            <select class="select floating" name="employee_id">
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}" {{ $employee->id == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                                @endforeach
+                            </select>
+                            <label class="focus-label">Employee</label>
+                        </div>
+                    </div>
+                    @endif
+                    <div class="col-sm-6 col-md-2">
+                        <div class="form-group form-focus select-focus">
+                            <select class="select floating" name="month">
+                                @foreach($months as $num => $name)
+                                    <option value="{{ $num }}" {{ (int)$month == $num ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                            <label class="focus-label">Month</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <div class="form-group form-focus">
+                            <input type="number" class="form-control floating" name="year" value="{{ $year }}" min="2020" max="2030">
+                            <label class="focus-label">Year</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <div class="form-group form-focus select-focus">
+                            <select class="select floating" name="period">
+                                <option value="1-15" {{ $period == '1-15' ? 'selected' : '' }}>1st - 15th</option>
+                                <option value="16-31" {{ $period == '16-31' ? 'selected' : '' }}>16th - End</option>
+                            </select>
+                            <label class="focus-label">Period</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <button type="submit" class="btn btn-success btn-block">View</button>
+                    </div>
+                </form>
+            </div>
+            <!-- /Filter Section -->
 
             <div class="row mb-4">
                 <div class="col-md-6">
                     <p><strong>Employee name:</strong> {{ $employee->name }}</p>
-                    <p><strong>Role:</strong> {{$employee->position->name}}</p>
-                    <p><strong>Team:</strong> {{$employee->department->name}}</p>
+                    <p><strong>Role:</strong> {{ $employee->position->name ?? 'N/A' }}</p>
+                    <p><strong>Team:</strong> {{ $employee->department->name ?? 'N/A' }}</p>
                     <p><strong>Notes:</strong></p>
                     <p><strong>Signature:</strong> Jane Doe</p>
                     <p><strong>Date:</strong> 07/13/24</p>

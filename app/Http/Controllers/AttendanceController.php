@@ -360,12 +360,34 @@ class AttendanceController extends Controller
         $today = $this->attendanceService->getAttendanceToday($id);
         return view('form.attendanceemployee', compact('attendance','today','employee'));
     }
-    public function timesheets($id = null){
+    public function timesheets(Request $request){
         $user = Auth::user();
-        $id = 4;
+        $employees = Employee::all();
+        
+        // Check if admin (role_id 1 or 2) - can select any employee
+        $isAdmin = in_array($user->role_id, [1, 2]);
+        
+        if ($isAdmin) {
+            // Admin can select employee via query param, default to first employee
+            $id = $request->get('employee_id', $employees->first()->id ?? null);
+        } else {
+            // Employee can only view their own timesheet
+            $id = $user->employee->id ?? null;
+        }
+        
+        if (!$id) {
+            return redirect()->back()->with('error', 'No employee found.');
+        }
+        
         $employee = Employee::where('id', $id)->with('position','department')->first();
-        $data = $this->attendanceService->getBiWeeklyAttendance($employee, 11, 2025, '16-31');
-        return view('form.timesheets', compact('data','employee'));
-
+        
+        // Get month and year from request, default to current
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
+        $period = $request->get('period', now()->day <= 15 ? '1-15' : '16-31');
+        
+        $data = $this->attendanceService->getBiWeeklyAttendance($employee, $month, $year, $period);
+        
+        return view('form.timesheets', compact('data', 'employee', 'employees', 'isAdmin', 'month', 'year', 'period'));
     }
 }
