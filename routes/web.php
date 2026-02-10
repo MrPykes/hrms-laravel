@@ -16,6 +16,7 @@ use App\Http\Controllers\LeavesController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\ExpenseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -210,6 +211,12 @@ Route::post('income/update', [IncomeController::class, 'update'])->middleware('a
 Route::post('income/store', [IncomeController::class, 'store'])->middleware('auth')->name('income/store');
 Route::post('income/destroy', [IncomeController::class, 'destroy'])->middleware('auth')->name('income/destroy');
 
+// ----------------------------- expense  ------------------------------//
+Route::get('expense', [ExpenseController::class, 'index'])->middleware('auth')->name('expense');
+Route::get('expense/edit/{id}', [ExpenseController::class, 'edit'])->middleware('auth')->name('expense/edit');
+Route::post('expense/update', [ExpenseController::class, 'update'])->middleware('auth')->name('expense/update');
+Route::post('expense/store', [ExpenseController::class, 'store'])->middleware('auth')->name('expense/store');
+Route::post('expense/destroy', [ExpenseController::class, 'destroy'])->middleware('auth')->name('expense/destroy');
 
 // ----------------------------- performance  ------------------------------//
 Route::get('form/performance/indicator/page', [App\Http\Controllers\PerformanceController::class, 'index'])->middleware('auth')->name('form/performance/indicator/page');

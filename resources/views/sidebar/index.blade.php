@@ -67,7 +67,7 @@
                             <li><a href="{{ route('form/invoice/view/page') }}">Invoices</a></li>
                             <li><a href="{{ route('income') }}">Income</a></li>
                             <li><a href="payments.html">Payments</a></li>
-                            <li><a href="expenses.html">Expenses</a></li>
+                            <li><a href="{{ route('expense') }}">Expenses</a></li>
                             <li><a href="provident-fund.html">Provident Fund</a></li>
                             <li><a href="taxes.html">Taxes</a></li>
                         </ul>
