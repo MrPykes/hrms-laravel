@@ -97,6 +97,15 @@
                 </div>
             </div>
 
+            @php
+                $totalProductionHours = 0;
+                $totalOvertimeHours = 0;
+                $totalHolidayHours = 0;
+                $totalBreakHours = 0;
+                $totalLeaveHours = 0;
+                $totalHours = 0;
+            @endphp
+
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -124,14 +133,54 @@
                             {{-- Other columns --}}
                             {{-- If $item->attendance is an Attendance model --}}
                             @if ($item['attendance'] instanceof \App\Models\Attendance)
-                                <td>{{ $item['attendance']->punch_in }}</td>
-                                <td>{{ $item['attendance']->punch_out }}</td>
-                                <td>{{ $item['attendance']->break_hours }}</td>
-                                <td class="highlight-green {{ $item['is_holiday'] ? 'text-primary' : '' }}">{{ $item['is_holiday'] ? 'Holiday' : ($item['attendance']->production_hours ?? 0) }}</td>
-                                <td>{{ $item['attendance']->payable_overtime_hours }}</td>
-                                <td>{{ $item['is_holiday'] && $item['attendance']  ? $item['attendance']->production_hours : 0}}</td>
-                                <td></td>
-                                <td class="fw-bold">{{ $item['attendance']->production_hours }}</td>
+                                @php
+                                    $punchIn = $item['attendance']->punch_in;
+                                    $punchOut = $item['attendance']->punch_out;
+                                    $breakHours = (float) ($item['attendance']->break_hours ?? 0);
+                                    
+                                    // Compute production hours from punch_in and punch_out
+                                    $prodHours = 0;
+                                    $overtimeHours = 0;
+                                    $standardWorkHours = 8; // Standard 8-hour work day
+                                    
+                                    if ($punchIn && $punchOut) {
+                                        $inTime = Carbon::parse($date . ' ' . $punchIn);
+                                        $outTime = Carbon::parse($date . ' ' . $punchOut);
+                                        
+                                        // If out time is before in time, assume next day
+                                        if ($outTime->lt($inTime)) {
+                                            $outTime->addDay();
+                                        }
+                                        
+                                        // Total worked hours minus breaks
+                                        $totalWorked = $outTime->diffInMinutes($inTime) / 60;
+                                        $prodHours = max(0, $totalWorked - $breakHours);
+                                        
+                                        // Calculate overtime (hours beyond standard work hours)
+                                        if ($prodHours > $standardWorkHours) {
+                                            $overtimeHours = $prodHours - $standardWorkHours;
+                                            $prodHours = $standardWorkHours;
+                                        }
+                                    }
+                                    
+                                    $holidayHours = ($item['is_holiday'] && $item['attendance']) ? ($prodHours + $overtimeHours) : 0;
+                                    
+                                    if (!$item['is_holiday']) {
+                                        $totalProductionHours = $totalProductionHours + $prodHours;
+                                    }
+                                    $totalOvertimeHours = $totalOvertimeHours + $overtimeHours;
+                                    $totalBreakHours = $totalBreakHours + $breakHours;
+                                    $totalHolidayHours = $totalHolidayHours + $holidayHours;
+                                    $totalHours = $totalHours + $prodHours + $overtimeHours;
+                                @endphp
+                                <td>{{ $punchIn }}</td>
+                                <td>{{ $punchOut }}</td>
+                                <td>{{ number_format($breakHours, 2) }}</td>
+                                <td class="highlight-green {{ $item['is_holiday'] ? 'text-primary' : '' }}">{{ $item['is_holiday'] ? 'Holiday' : number_format($prodHours, 2) }}</td>
+                                <td>{{ number_format($overtimeHours, 2) }}</td>
+                                <td>{{ number_format($holidayHours, 2) }}</td>
+                                <td>0.00</td>
+                                <td class="fw-bold">{{ number_format($prodHours + $overtimeHours, 2) }}</td>
 
                             {{-- If holiday --}}
                             @elseif ($item['is_holiday'] && $item['attendance'] === null && !Carbon::parse($date)->isWeekend())
@@ -139,7 +188,12 @@
 
                             {{-- If leave --}}
                             @elseif ($item['is_leave'])
-                                <td colspan="8" class="text-center text-warning">{{ $item['is_leave']->leave_type->name }}</td>
+                                @php
+                                    $leaveHours = 8; // Assuming 8 hours per leave day
+                                    $totalLeaveHours = $totalLeaveHours + $leaveHours;
+                                @endphp
+                                <td colspan="7" class="text-center text-warning">{{ $item['is_leave']->leave_type->name }}</td>
+                                <td>{{ number_format($leaveHours, 2) }}</td>
 
                             {{-- If no attendance --}}
                             @else
@@ -153,24 +207,20 @@
             <table class="table table-bordered">
                 <tr class="footer-total">
                     <td>Total Hours</td>
-                    <td>80.00</td>
-                    <td>5.00</td>
-                    <td>12.00</td>
-                    <td>16.00</td>
-                    <td>57.00</td>
+                    <td>{{ number_format($totalProductionHours, 2) }}</td>
+                    <td>{{ number_format($totalOvertimeHours, 2) }}</td>
+                    <td>{{ number_format($totalHolidayHours, 2) }}</td>
+                    <td>{{ number_format($totalLeaveHours, 2) }}</td>
+                    <td>{{ number_format($totalHours + $totalOvertimeHours, 2) }}</td>
                 </tr>
                 <tr>
-                    <td>Rate</td>
-                    <td>$0.00</td>
-                    <td>$50.00</td>
-                    <td>$50.00</td>
-                    <td>-</td>
-                    <td></td>
-                </tr>
-                <tr class="fw-bold">
-                    <td>Total Pay:</td>
-                    <td colspan="4"></td>
-                    <td>$4,250.00</td>
+                    <td colspan="6" class="text-muted small">
+                        <strong>Summary:</strong> Production: {{ number_format($totalProductionHours, 2) }}h | 
+                        Overtime: {{ number_format($totalOvertimeHours, 2) }}h | 
+                        Holiday: {{ number_format($totalHolidayHours, 2) }}h | 
+                        Leave: {{ number_format($totalLeaveHours, 2) }}h | 
+                        Total Breaks: {{ number_format($totalBreakHours, 2) }}h
+                    </td>
                 </tr>
             </table>
                 <!-- /Page Content -->
