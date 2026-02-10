@@ -59,9 +59,9 @@
                                         <td class="text-center">
                                             <div class="action-label">
                                                 <a class="btn btn-white btn-sm btn-rounded" href="javascript:void(0);">
-                                                    @if($item->status == 'Approved')
+                                                    @if(strtolower($item->status) == 'approved')
                                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
-                                                    @elseif($item->status == 'Pending')
+                                                    @elseif(strtolower($item->status) == 'pending')
                                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
                                                     @else
                                                         <i class="fa fa-dot-circle-o text-danger"></i> Rejected
@@ -275,14 +275,17 @@
                 url: `/expense/edit/${expenseId}`,
                 type: 'GET',
                 success: function (data) {
+                    console.log('Expense data:', data);
                     $('#e_id').val(data.id);
                     $('#edit_item').val(data.item);
                     $('#edit_purchase_from').val(data.purchase_from);
                     $('#edit_purchase_date').val(data.purchase_date);
-                    $('#edit_purchased_by').val(data.purchased_by);
+                    $('#edit_purchased_by').val(data.purchased_by).trigger('change');
                     $('#edit_amount').val(data.amount);
                     $('#edit_paid_by').val(data.paid_by);
-                    $('#edit_status').val(data.status);
+                    // Capitalize first letter to match option values
+                    var status = data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1).toLowerCase() : '';
+                    $('#edit_status').val(status).trigger('change');
                     $('#edit_remarks').val(data.remarks);
                 },
                 error: function (xhr, status, error) {
