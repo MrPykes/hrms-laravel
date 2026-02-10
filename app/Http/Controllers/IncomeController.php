@@ -80,8 +80,8 @@ class IncomeController extends Controller
             'client_name' => $income->client_name,
             'amount' => $income->amount,
             'status' => $income->status,
-            'payroll_start_date' => $income->payroll_start_date,
-            'payroll_end_date' => $income->payroll_end_date,
+            'payroll_start_date' => $income->payroll_start_date ? $income->payroll_start_date->format('Y-m-d') : null,
+            'payroll_end_date' => $income->payroll_end_date ? $income->payroll_end_date->format('Y-m-d') : null,
             'account' => $income->account,
         ]);
     }

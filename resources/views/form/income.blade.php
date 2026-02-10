@@ -42,7 +42,6 @@
                                     <th>Client Name </th>
                                     <th>Amount </th>
                                     <th>Status </th>
-                                    <th>Month </th>
                                     <th>Start Date </th>
                                     <th>End Date</th>
                                     <th>Account </th>
@@ -57,9 +56,8 @@
                                             <td class="name">{{ $items->client_name }}</td>
                                             <td class="amount">{{ $items->amount }}</td>
                                             <td class="_status">{{ $items->status }}</td>
-                                            <td class="month">{{ $items->month }}</td>
-                                            <td class="start_date">{{ $items->payroll_start_date }}</td>
-                                            <td class="end_date">{{ $items->payroll_end_date }}</td>
+                                            <td class="start_date">{{ $items->payroll_start_date ? \Carbon\Carbon::parse($items->payroll_start_date)->format('F d, Y') : '' }}</td>
+                                            <td class="end_date">{{ $items->payroll_end_date ? \Carbon\Carbon::parse($items->payroll_end_date)->format('F d, Y') : '' }}</td>
                                             <td class="account">{{ $items->account }}</td>
                                             <td class="text-right">
                                                 <div class="dropdown dropdown-action">
