@@ -113,9 +113,10 @@
                         <th>Day</th>
                         <th>Start</th>
                         <th>Finish</th>
+                        <th>Late (mins)</th>
                         <th>Breaks (Hours)</th>
                         <th>Production Hours</th>
-                        <th>Overtime (Hours)</th>
+                        <th>Overtime (mins)</th>
                         <th>Holiday(Hours)</th>
                         <th>Leave (Hours)</th>
                         <th>Total hours</th>
@@ -138,29 +139,40 @@
                                     $punchOut = $item['attendance']->punch_out;
                                     $breakHours = (float) ($item['attendance']->break_hours ?? 0);
                                     
+                                    // Standard work start time (8:00 AM)
+                                    $standardStartTime = Carbon::parse($date . ' 08:00:00');
+                                    $lateMinutes = 0;
+                                    
                                     // Compute production hours from punch_in and punch_out
                                     $prodHours = 0;
                                     $overtimeHours = 0;
-                                    $standardWorkHours = 8; // Standard 8-hour work day
+                                    $overtimeStartTime = Carbon::parse($date . ' 17:00:00'); // 5 PM
                                     
                                     if ($punchIn && $punchOut) {
                                         $inTime = Carbon::parse($date . ' ' . $punchIn);
                                         $outTime = Carbon::parse($date . ' ' . $punchOut);
+                                        
+                                        // Calculate late minutes
+                                        if ($inTime->gt($standardStartTime)) {
+                                            $lateMinutes = $standardStartTime->diffInMinutes($inTime);
+                                        }
                                         
                                         // If out time is before in time, assume next day
                                         if ($outTime->lt($inTime)) {
                                             $outTime->addDay();
                                         }
                                         
-                                        // Total worked hours minus breaks
-                                        $totalWorked = $outTime->diffInMinutes($inTime) / 60;
-                                        $prodHours = max(0, $totalWorked - $breakHours);
-                                        
-                                        // Calculate overtime (hours beyond standard work hours)
-                                        if ($prodHours > $standardWorkHours) {
-                                            $overtimeHours = $prodHours - $standardWorkHours;
-                                            $prodHours = $standardWorkHours;
+                                        // Calculate overtime (work after 5 PM) in minutes
+                                        if ($outTime->gt($overtimeStartTime)) {
+                                            $overtimeHours = $overtimeStartTime->diffInMinutes($outTime);
                                         }
+                                        
+                                        // Production hours start at 8 AM, not before
+                                        $prodStartTime = $inTime->gt($standardStartTime) ? $inTime : $standardStartTime;
+                                        $prodEndTime = $outTime->gt($overtimeStartTime) ? $overtimeStartTime : $outTime;
+                                        
+                                        // Production hours = from 8 AM (or late start) to 5 PM (or early end) minus breaks
+                                        $prodHours = max(0, $prodEndTime->diffInMinutes($prodStartTime) / 60 - $breakHours);
                                     }
                                     
                                     $holidayHours = ($item['is_holiday'] && $item['attendance']) ? ($prodHours + $overtimeHours) : 0;
@@ -175,16 +187,17 @@
                                 @endphp
                                 <td>{{ $punchIn }}</td>
                                 <td>{{ $punchOut }}</td>
+                                <td class="{{ $lateMinutes > 0 ? 'text-danger' : '' }}">{{ $lateMinutes > 0 ? $lateMinutes : '-' }}</td>
                                 <td>{{ number_format($breakHours, 2) }}</td>
                                 <td class="highlight-green {{ $item['is_holiday'] ? 'text-primary' : '' }}">{{ $item['is_holiday'] ? 'Holiday' : number_format($prodHours, 2) }}</td>
-                                <td>{{ number_format($overtimeHours, 2) }}</td>
+                                <td>{{ $overtimeHours > 0 ? $overtimeHours : '-' }}</td>
                                 <td>{{ number_format($holidayHours, 2) }}</td>
                                 <td>0.00</td>
-                                <td class="fw-bold">{{ number_format($prodHours + $overtimeHours, 2) }}</td>
+                                <td class="fw-bold">{{ number_format($prodHours + ($overtimeHours / 60), 2) }}</td>
 
                             {{-- If holiday --}}
                             @elseif ($item['is_holiday'] && $item['attendance'] === null && !Carbon::parse($date)->isWeekend())
-                                <td colspan="8" class="text-center text-primary">Holiday</td>
+                                <td colspan="9" class="text-center text-primary">Holiday</td>
 
                             {{-- If leave --}}
                             @elseif ($item['is_leave'])
@@ -192,12 +205,12 @@
                                     $leaveHours = 8; // Assuming 8 hours per leave day
                                     $totalLeaveHours = $totalLeaveHours + $leaveHours;
                                 @endphp
-                                <td colspan="7" class="text-center text-warning">{{ $item['is_leave']->leave_type->name }}</td>
+                                <td colspan="8" class="text-center text-warning">{{ $item['is_leave']->leave_type->name }}</td>
                                 <td>{{ number_format($leaveHours, 2) }}</td>
 
                             {{-- If no attendance --}}
                             @else
-                                <td colspan="8" class="text-center text-muted">Absent</td>
+                                <td colspan="9" class="text-center text-muted">Absent</td>
                             @endif
                         </tr>
                     @endforeach
@@ -208,15 +221,15 @@
                 <tr class="footer-total">
                     <td>Total Hours</td>
                     <td>{{ number_format($totalProductionHours, 2) }}</td>
-                    <td>{{ number_format($totalOvertimeHours, 2) }}</td>
+                    <td>{{ $totalOvertimeHours }}</td>
                     <td>{{ number_format($totalHolidayHours, 2) }}</td>
                     <td>{{ number_format($totalLeaveHours, 2) }}</td>
-                    <td>{{ number_format($totalHours + $totalOvertimeHours, 2) }}</td>
+                    <td>{{ number_format($totalHours + ($totalOvertimeHours / 60), 2) }}</td>
                 </tr>
                 <tr>
                     <td colspan="6" class="text-muted small">
                         <strong>Summary:</strong> Production: {{ number_format($totalProductionHours, 2) }}h | 
-                        Overtime: {{ number_format($totalOvertimeHours, 2) }}h | 
+                        Overtime: {{ $totalOvertimeHours }}m | 
                         Holiday: {{ number_format($totalHolidayHours, 2) }}h | 
                         Leave: {{ number_format($totalLeaveHours, 2) }}h | 
                         Total Breaks: {{ number_format($totalBreakHours, 2) }}h
