@@ -5,9 +5,9 @@
 @endsection
 @section('content')
 
-    {!! Toastr::message() !!}
-    <!-- Page Wrapper -->
+<!-- Page Wrapper -->
     <div class="page-wrapper">
+        {!! Toastr::message() !!}
         <!-- Page Content -->
         <div class="content container-fluid">
             <!-- Page Header -->

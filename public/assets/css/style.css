@@ -2288,6 +2288,7 @@ table.dataTable thead > tr > td.sorting {
 	padding-left: 8px;
 	padding-right: 8px;
 }
+#delete_income .continue-btn,
 #delete_expense .continue-btn,
 #approve_leave .continue-btn,
 #delete_leave .continue-btn,

@@ -125,11 +125,25 @@ class IncomeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Income  $income
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Income $income)
+    public function destroy(Request $request)
     {
-        //
+        $request->validate([
+            'id' => 'required|exists:incomes,id',
+        ]);
+
+        try {
+            $income = Income::findOrFail($request->id);
+            $income->delete();
+
+            return redirect()->back()->with('success', 'Income record deleted successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Income Delete Error: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to delete income record. Please try again.');
+        }
     }
 }

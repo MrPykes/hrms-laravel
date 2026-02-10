@@ -287,7 +287,7 @@
             });
         });
 
-        $(document).on('click','.delete_income',function()
+        $(document).on('click','.delete-income',function()
         {
             var _this = $(this).parents('tr');            
             $('#d_id').val(_this.find('.id').text());

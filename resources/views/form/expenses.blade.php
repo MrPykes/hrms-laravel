@@ -79,7 +79,7 @@
                                         <td>{{ ++$key }}</td>
                                         <td class="item">{{ $item->item }}</td>
                                         <td class="purchase_from">{{ $item->purchase_from }}</td>
-                                        <td class="purchase_date">{{ $item->purchase_date }}</td>
+                                        <td class="purchase_date">{{ $item->purchase_date ? \Carbon\Carbon::parse($item->purchase_date)->format('F d, Y') : '' }}</td>
                                         <td class="purchased_by">{{ $item->purchaser ? $item->purchaser->name : 'N/A' }}</td>
                                         <td class="amount">{{ number_format($item->amount, 2, '.', ',') }}</td>
                                         <td class="paid_by">{{ $item->paid_by }}</td>
@@ -361,10 +361,9 @@
         });
 
         function parseDate(dateStr) {
-            // Handle both dd-mm-yyyy and yyyy-mm-dd formats
-            var parts;
+            // Handle dd-mm-yyyy format from datetimepicker
             if (dateStr.includes('-')) {
-                parts = dateStr.split('-');
+                var parts = dateStr.split('-');
                 if (parts[0].length === 4) {
                     // yyyy-mm-dd format
                     return new Date(parts[0], parts[1] - 1, parts[2]);
@@ -373,7 +372,9 @@
                     return new Date(parts[2], parts[1] - 1, parts[0]);
                 }
             }
-            return null;
+            // Handle "March 12, 2026" format
+            var date = new Date(dateStr);
+            return isNaN(date) ? null : date;
         }
     </script>
     @endsection
