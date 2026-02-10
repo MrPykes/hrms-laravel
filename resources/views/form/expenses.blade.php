@@ -28,6 +28,33 @@
             {{-- message --}}
             {!! Toastr::message() !!}
 
+            <!-- Search Filter -->
+            <div class="row filter-row">
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-group form-focus">
+                        <div class="cal-icon">
+                            <input class="form-control floating datetimepicker" type="text" id="filter_from_date">
+                        </div>
+                        <label class="focus-label">From</label>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-group form-focus">
+                        <div class="cal-icon">
+                            <input class="form-control floating datetimepicker" type="text" id="filter_to_date">
+                        </div>
+                        <label class="focus-label">To</label>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <a href="#" class="btn btn-success btn-block" id="filter_search"> Search </a>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <a href="#" class="btn btn-secondary btn-block" id="filter_clear"> Clear </a>
+                </div>
+            </div>
+            <!-- /Search Filter -->
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
@@ -298,6 +325,56 @@
             var _this = $(this).parents('tr');            
             $('#d_id').val(_this.find('.id').text());
         });
+
+        // Date filter functionality
+        $('#filter_search').on('click', function(e) {
+            e.preventDefault();
+            var fromDate = $('#filter_from_date').val();
+            var toDate = $('#filter_to_date').val();
+            
+            // Parse dates (format: dd-mm-yyyy from datetimepicker)
+            var from = fromDate ? parseDate(fromDate) : null;
+            var to = toDate ? parseDate(toDate) : null;
+            
+            $('.datatable tbody tr').each(function() {
+                var rowDate = $(this).find('.purchase_date').text().trim();
+                var rowDateParsed = rowDate ? parseDate(rowDate) : null;
+                
+                var show = true;
+                
+                if (from && rowDateParsed && rowDateParsed < from) {
+                    show = false;
+                }
+                if (to && rowDateParsed && rowDateParsed > to) {
+                    show = false;
+                }
+                
+                $(this).toggle(show);
+            });
+        });
+
+        $('#filter_clear').on('click', function(e) {
+            e.preventDefault();
+            $('#filter_from_date').val('');
+            $('#filter_to_date').val('');
+            $('.datatable tbody tr').show();
+        });
+
+        function parseDate(dateStr) {
+            // Handle both dd-mm-yyyy and yyyy-mm-dd formats
+            var parts;
+            if (dateStr.includes('-')) {
+                parts = dateStr.split('-');
+                if (parts[0].length === 4) {
+                    // yyyy-mm-dd format
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    // dd-mm-yyyy format
+                    return new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+            return null;
+        }
     </script>
     @endsection
 
