@@ -80,7 +80,7 @@
                                     <th>Email</th>
                                     <th>Mobile</th>
                                     <th class="text-nowrap">Join Date</th>
-                                    <th>Role</th>
+                                    <th>Position</th>
                                     <th class="text-right no-sort">Action</th>
                                 </tr>
                             </thead>
@@ -91,7 +91,7 @@
                                         <h2 class="table-avatar">
                                             <a href="{{ url('employee/profile/'.$employee->id) }}" class="avatar">
                                                 <img alt="" src="{{ URL::to('/assets/images/photo_defaults.jpg') }}"></a>
-                                            <a href="{{ url('employee/profile/'.$employee->id) }}">{{ $employee->name }}<span>{{ $employee->position_name }}</span>
+                                            <a href="{{ url('employee/profile/'.$employee->id) }}">{{ $employee->name }}<span>{{ $employee->position->name ?? '' }}</span>
                                         </a>
                                         </h2>
                                     </td>
@@ -99,12 +99,12 @@
                                     <td>{{ $employee->email }}</td>
                                     <td>{{ $employee->phone }}</td>
                                     <td>{{ $employee->join_date }}</td>
-                                    <td>{{ $employee->position_name }}</td>
+                                    <td>{{ $employee->position->name ?? '' }}</td>
                                     <td class="text-right">
                                         <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                             <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="{{ url('all/employee/view/edit/'.$employee->id) }}"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                                <a class="dropdown-item" href="{{ url('all/employee/view/edit/'.$employee->id) }}?from=list"><i class="fa fa-pencil m-r-5"></i> Edit</a>
                                                 <a class="dropdown-item" href="{{url('all/employee/delete/'.$employee->id)}}"onclick="return confirm('Are you sure to want to delete it?')"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                             </div>
                                         </div>

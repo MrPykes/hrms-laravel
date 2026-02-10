@@ -83,11 +83,10 @@
                         <table class="table table-striped custom-table datatable">
                             <thead>
                                 <tr>
-                                    <th>Employee</th>
                                     <th>Employee ID</th>
+                                    <th>Employee</th>
                                     <th>Email</th>
                                     <th>Join Date</th>
-                                    <th>Role</th>
                                     <th>Salary</th>
                                     <th>Payslip</th>
                                     <th class="text-right">Action</th>
@@ -96,13 +95,13 @@
                             <tbody>
                                 @foreach ($users as $items)
                                 <tr>
+                                    <td>{{ $items->company_id }}</td>
                                     <td>
                                         <h2 class="table-avatar">
                                             <a href="{{ url('employee/profile/'.$items->id) }}" class="avatar"><img alt="" src="{{ URL::to('/assets/images/photo_defaults.jpg') }}"></a>
                                             <a href="{{ url('employee/profile/'.$items->id) }}">{{ $items->name }}<span>{{ $items->position->name }}</span></a>
                                         </h2>
                                     </td>
-                                    <td>{{ $items->company_id }}</td>
                                     <td hidden class="id">{{ $items->id }}</td>
                                     <td hidden class="name">{{ $items->name }}</td>
                                     <td hidden class="basic">{{ $items->basic }}</td>
@@ -119,8 +118,7 @@
                                     <td hidden class="labour_welfare">{{ $items->labour_welfare }}</td>
                                     <td>{{ $items->email }}</td>
                                     <td>{{ $items->join_date }}</td>
-                                    <td>{{ $items->role_name }}</td>
-                                    <td>${{ $items->salary }}</td>
+                                    <td>{{ number_format($items->salary, 2, '.', ',') }}</td>
                                     <td hidden class="salary">{{ $items->salary }}</td>
                                     <td><a class="btn btn-sm btn-primary" href="{{ url('form/salary/view/'.$items->id) }}">Generate Slip</a></td>
                                     <td class="text-right">

@@ -35,18 +35,16 @@
                         <span>Employees</span>
                     </li>
                     <li class="submenu">
-                        <a href="#" class="noti-dot">
+                        <a href="#">
                             <i class="la la-user"></i>
                             <span> Employees</span>
                             <span class="menu-arrow"></span>
                         </a>
                         <ul style="display: none;">
-                            <li><a class="active" href="{{ route('all/employee/card') }}">All Employees</a></li>
+                            <li><a href="{{ route('all/employee/card') }}">All Employees</a></li>
                             <li><a class="" href="{{ route('form/holidays') }}">Holidays</a></li>
-                            <li><a href="{{ route('form/leaves') }}">Leaves (Admin) 
-                                <span class="badge badge-pill bg-primary float-right">1</span></a>
-                            </li>
-                            <li><a href="{{route('form/leavesemployee/new')}}">Leaves (Employee)</a></li>
+                            <li><a href="{{ route('form/leaves') }}">Leaves (Admin)</a></li>
+                         
                             <li><a href="{{ route('form/leavesettings/page') }}">Leave Settings</a></li>
                             <li><a href="{{ route('attendance/page') }}">Attendance (Admin)</a></li>
                             <li><a href="{{ route('attendance/employee/page') }}">Attendance (Employee)</a></li>
@@ -144,4 +142,26 @@
         </div>
     </div>
     <!-- /Sidebar -->
+    <script>
+        (function(){
+            try{
+                var path = window.location.pathname.replace(/\/+$/,'');
+                var links = document.querySelectorAll('#sidebar-menu a[href]');
+                links.forEach(function(a){
+                    var href = a.getAttribute('href');
+                    if(!href) return;
+                    var linkPath = href.replace(window.location.origin, '').replace(/\/+$/,'');
+                    if(linkPath === path || (path !== '' && linkPath && path.indexOf(linkPath) !== -1) || (linkPath !== '' && path.indexOf(linkPath) !== -1)){
+                        // If this link (or its parent submenu) is already active, leave it unchanged
+                        var parentLi = a.closest('li.submenu');
+                        if (a.classList.contains('active') || (parentLi && parentLi.classList.contains('active'))) return;
+                        a.classList.add('active');
+                        var parentUl = a.closest('ul');
+                        if(parentUl) parentUl.style.display = 'block';
+                        if(parentLi) parentLi.classList.add('active');
+                    }
+                });
+            }catch(e){ console && console.error(e); }
+        })();
+    </script>
 @endsection

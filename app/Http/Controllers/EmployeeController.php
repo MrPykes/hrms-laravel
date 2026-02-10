@@ -54,7 +54,7 @@ class EmployeeController extends Controller
         $positions = Position::all();
         $name = $request->name;
         $position_id = $request->position;
-        $employees = Employee::with(['department', 'position'])
+        $employees = Employee::with(['department', 'position', 'user.role'])
                 ->where(function ($query) use ($request) {
 
                     if ($request->filled('name')) {
@@ -110,12 +110,13 @@ class EmployeeController extends Controller
         }
     }
     // view edit record
-    public function viewRecord($id)
+    public function viewRecord($id, Request $request)
     {
         $departments = Department::all();
         $positions = Position::all();
         $employees = Employee::with(['department', 'position'])->where('id', $id)->first();
-        return view('form.edit.editemployee',compact('employees','departments','positions'));   
+        $from = $request->query('from', 'card');
+        return view('form.edit.editemployee',compact('employees','departments','positions','from'));   
     }
     // update record employee
     public function updateRecord( Request $request)
@@ -132,7 +133,8 @@ class EmployeeController extends Controller
             $employee->save();
             DB::commit();
             Toastr::success('updated record successfully :)','Success');
-            return redirect()->back();
+            
+            return redirect()->back()->withInput();
         
         }catch(\Exception $e){
             DB::rollback();
@@ -143,7 +145,7 @@ class EmployeeController extends Controller
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             Toastr::error('updated record fail :)','Error');
-            return redirect()->back();
+            return redirect()->back()->withInput();
         }
     }
     // delete record

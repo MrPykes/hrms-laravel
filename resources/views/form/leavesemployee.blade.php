@@ -163,7 +163,7 @@
                     <div class="modal-body">
                         <form id="add_leave_form" method="POST" action="{{ route('form/leaves/save') }}">
                             @csrf
-                            <input class="form-control" name="employee_id" type="hidden" value="{{ Auth::user()->id }}">
+                            <input class="form-control" name="employee_id" type="text" value="{{ $id }}">
                             <div class="form-group">
                                 <label>Leave Type <span class="text-danger">*</span></label>
                                 <select class="select" name="leave_type">

@@ -132,8 +132,8 @@
                                         <tr>
                                             <td>
                                                 <h2 class="table-avatar">
-                                                    <a href="{{ url('employee/profile/'.$items->employee_id) }}" class="avatar"><img alt="" src="{{ URL::to('/assets/images/'. ($items->employee->profile_pic == null ? 'photo_defaults.jpg' : $items->employee->profile_pic)) }}" alt="{{ $items->employee->name }}"></a>
-                                                    <a href="#">{{ $items->employee->name }}<span>{{ $items->employee->position->name }}</span></a>
+                                                    <a href="{{ url('form/leavesemployee/'.$items->employee_id) }}" class="avatar"><img alt="" src="{{ URL::to('/assets/images/'. ($items->employee->profile_pic == null ? 'photo_defaults.jpg' : $items->employee->profile_pic)) }}" alt="{{ $items->employee->name }}"></a>
+                                                    <a href="{{ url('form/leavesemployee/'.$items->employee_id) }}">{{ $items->employee->name }}<span>{{ $items->employee->position->name }}</span></a>
                                                 </h2>
                                             </td>
                                             <td hidden class="id">{{ $items->id }}</td>
@@ -221,7 +221,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <input type="hidden" class="form-control" id="rec_id" name="rec_id" value="{{ Auth::user()->rec_id }}">
+                            <input type="text" class="form-control" id="rec_id" name="rec_id" value="{{ Auth::user()->rec_id }}">
                             <div class="form-group">
                                 <label>From <span class="text-danger">*</span></label>
                                 <div class="cal-icon">

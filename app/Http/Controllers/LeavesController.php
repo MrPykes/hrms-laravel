@@ -22,6 +22,7 @@ class LeavesController extends Controller
     // leaves
     public function leaves()
     {
+ 
         $pendingRequests = (new LeaveRequest)->getLeavePendingRequests();
         $leaves = LeaveRequest::with(['employee'])->get();
         $leave_types = LeaveType::all();
@@ -205,16 +206,18 @@ class LeavesController extends Controller
     }
 
     // leaves Employee
-    public function leavesEmployee()
+    public function leavesEmployee($id)
     {
+        // $id = auth()->user()->employee_id;
+
         $leaves = LeaveRequest::with(['employee','leave_type'])
                                 // ->where('employee_id', auth()->user()->id)                       
-                                ->where('employee_id', 1)                       
+                                ->where('employee_id', $id)                       
                                 ->get();
         $leave_types = LeaveType::all();
-        $leaveBalances = (new LeaveRequest)->getLeaveBalances(1);
-        $pendingRequests = (new LeaveRequest)->getLeavePendingRequests(1);
-        return view('form.leavesemployee', compact('leaves', 'leaveBalances','leave_types', 'pendingRequests'));
+        $leaveBalances = (new LeaveRequest)->getLeaveBalances($id);
+        $pendingRequests = (new LeaveRequest)->getLeavePendingRequests($id);
+        return view('form.leavesemployee', compact('leaves', 'leaveBalances','leave_types', 'pendingRequests','id'));
     }
 
     // shiftscheduling

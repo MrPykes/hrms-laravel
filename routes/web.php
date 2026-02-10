@@ -141,7 +141,7 @@ Route::post('designation/destroy/', [App\Http\Controllers\DesignationController:
 
 // ----------------------------- form leaves ------------------------------//
 Route::get('form/leaves', [App\Http\Controllers\LeavesController::class, 'leaves'])->middleware('auth')->name('form/leaves');
-Route::get('form/leavesemployee/new', [App\Http\Controllers\LeavesController::class, 'leavesEmployee'])->middleware('auth')->name('form/leavesemployee/new');
+Route::get('form/leavesemployee/{id}', [App\Http\Controllers\LeavesController::class, 'leavesEmployee'])->middleware('auth')->name('form/leavesemployee');
 Route::post('form/leaves/save', [App\Http\Controllers\LeavesController::class, 'saveRecord'])->middleware('auth')->name('form/leaves/save');
 Route::post('form/leaves/update', [App\Http\Controllers\LeavesController::class, 'updateRecordLeave'])->middleware('auth')->name('form/leaves/update');
 Route::post('form/leaves/delete', [App\Http\Controllers\LeavesController::class, 'deleteLeave'])->middleware('auth')->name('form/leaves/delete');
