@@ -152,6 +152,12 @@ Route::get('timesheets', [App\Http\Controllers\AttendanceController::class, 'tim
 
 // ----------------------------- form attendance  ------------------------------//
 Route::get('form/leavesettings/page', [App\Http\Controllers\LeavesController::class, 'leaveSettings'])->middleware('auth')->name('form/leavesettings/page');
+
+// ----------------------------- leave type CRUD ------------------------------//
+Route::post('form/leavetype/save', [App\Http\Controllers\LeavesController::class, 'saveLeaveType'])->middleware('auth')->name('form/leavetype/save');
+Route::post('form/leavetype/update', [App\Http\Controllers\LeavesController::class, 'updateLeaveType'])->middleware('auth')->name('form/leavetype/update');
+Route::post('form/leavetype/delete', [App\Http\Controllers\LeavesController::class, 'deleteLeaveType'])->middleware('auth')->name('form/leavetype/delete');
+
 Route::post('attendance/save', [App\Http\Controllers\LeavesController::class, 'saveAttendance'])->middleware('auth')->name('attendance/save');
 
 Route::get('attendance/page', [App\Http\Controllers\AttendanceController::class, 'index'])->middleware('auth')->name('attendance/page');

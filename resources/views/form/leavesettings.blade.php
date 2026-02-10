@@ -478,6 +478,62 @@
                 </div>
             </div>
 
+            <!-- Leave Types Section -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0">Leave Types</h4>
+                            <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave_type"><i class="fa fa-plus"></i> Add Leave Type</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped custom-table mb-0 datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Leave Type</th>
+                                            <th>Days Per Year</th>
+                                            <th>Description</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($leaveTypes as $index => $type)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $type->name }}</td>
+                                            <td>{{ $type->number_of_leave }}</td>
+                                            <td>{{ $type->description ?? '-' }}</td>
+                                            <td class="text-right">
+                                                <div class="dropdown dropdown-action">
+                                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                                    <div class="dropdown-menu dropdown-menu-right">
+                                                        <a class="dropdown-item edit-leave-type" href="#" data-toggle="modal" data-target="#edit_leave_type"
+                                                            data-id="{{ $type->id }}"
+                                                            data-name="{{ $type->name }}"
+                                                            data-days="{{ $type->number_of_leave }}"
+                                                            data-description="{{ $type->description }}">
+                                                            <i class="fa fa-pencil m-r-5"></i> Edit
+                                                        </a>
+                                                        <a class="dropdown-item delete-leave-type" href="#" data-toggle="modal" data-target="#delete_leave_type"
+                                                            data-id="{{ $type->id }}">
+                                                            <i class="fa fa-trash-o m-r-5"></i> Delete
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /Leave Types Section -->
+
         </div>
         <!-- /Page Content -->
 
@@ -613,9 +669,129 @@
             </div>
         </div>
         <!-- /Delete Custom Policy Modal -->
+
+        <!-- Add Leave Type Modal -->
+        <div id="add_leave_type" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Leave Type</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('form/leavetype/save') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label>Leave Type Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name" required placeholder="e.g. Sick Leave">
+                            </div>
+                            <div class="form-group">
+                                <label>Number of Days <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="number_of_leave" required min="0" placeholder="e.g. 10">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea class="form-control" name="description" rows="3" placeholder="Optional description"></textarea>
+                            </div>
+                            <div class="submit-section">
+                                <button type="submit" class="btn btn-primary submit-btn">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Add Leave Type Modal -->
+
+        <!-- Edit Leave Type Modal -->
+        <div id="edit_leave_type" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Leave Type</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('form/leavetype/update') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" id="edit_leave_type_id">
+                            <div class="form-group">
+                                <label>Leave Type Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name" id="edit_leave_type_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Number of Days <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="number_of_leave" id="edit_leave_type_days" required min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea class="form-control" name="description" id="edit_leave_type_description" rows="3"></textarea>
+                            </div>
+                            <div class="submit-section">
+                                <button type="submit" class="btn btn-primary submit-btn">Update</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Edit Leave Type Modal -->
+
+        <!-- Delete Leave Type Modal -->
+        <div id="delete_leave_type" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="form-header">
+                            <h3>Delete Leave Type</h3>
+                            <p>Are you sure you want to delete this leave type?</p>
+                        </div>
+                        <form action="{{ route('form/leavetype/delete') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" id="delete_leave_type_id">
+                            <div class="modal-btn delete-action">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button type="submit" class="btn btn-primary continue-btn btn-block">Delete</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Delete Leave Type Modal -->
        
     </div>
     <!-- /Page Wrapper -->
     @section('script')
+    <script>
+        // Edit Leave Type Modal - populate fields
+        $(document).on('click', '.edit-leave-type', function() {
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            var days = $(this).data('days');
+            var description = $(this).data('description');
+            
+            $('#edit_leave_type_id').val(id);
+            $('#edit_leave_type_name').val(name);
+            $('#edit_leave_type_days').val(days);
+            $('#edit_leave_type_description').val(description);
+        });
+
+        // Delete Leave Type Modal - set id
+        $(document).on('click', '.delete-leave-type', function() {
+            var id = $(this).data('id');
+            $('#delete_leave_type_id').val(id);
+        });
+    </script>
     @endsection
 @endsection

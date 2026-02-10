@@ -169,7 +169,93 @@ class LeavesController extends Controller
     // leaveSettings
     public function leaveSettings()
     {
-        return view('form.leavesettings');
+        $leaveTypes = LeaveType::all();
+        return view('form.leavesettings', compact('leaveTypes'));
+    }
+
+    // Save new leave type
+    public function saveLeaveType(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'number_of_leave' => 'required|integer|min:0',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $leaveType = new LeaveType();
+            $leaveType->name = $request->name;
+            $leaveType->number_of_leave = $request->number_of_leave;
+            $leaveType->description = $request->description;
+            $leaveType->save();
+
+            DB::commit();
+            Toastr::success('Leave type created successfully :)', 'Success');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Leave type creation failed', [
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+            ]);
+            Toastr::error('Failed to create leave type :)', 'Error');
+            return redirect()->back();
+        }
+    }
+
+    // Update leave type
+    public function updateLeaveType(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:leave_types,id',
+            'name' => 'required|string|max:255',
+            'number_of_leave' => 'required|integer|min:0',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            LeaveType::where('id', $request->id)->update([
+                'name' => $request->name,
+                'number_of_leave' => $request->number_of_leave,
+                'description' => $request->description,
+            ]);
+
+            DB::commit();
+            Toastr::success('Leave type updated successfully :)', 'Success');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Leave type update failed', [
+                'id' => $request->id,
+                'data' => $request->all(),
+                'error_message' => $e->getMessage(),
+            ]);
+            Toastr::error('Failed to update leave type :)', 'Error');
+            return redirect()->back();
+        }
+    }
+
+    // Delete leave type
+    public function deleteLeaveType(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            LeaveType::destroy($request->id);
+
+            DB::commit();
+            Toastr::success('Leave type deleted successfully :)', 'Success');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Leave type deletion failed', [
+                'id' => $request->id,
+                'error_message' => $e->getMessage(),
+            ]);
+            Toastr::error('Failed to delete leave type :)', 'Error');
+            return redirect()->back();
+        }
     }
 
     // attendance admin
